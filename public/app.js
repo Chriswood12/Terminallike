@@ -18,7 +18,7 @@ const DEFAULT_PREFS = {
   fontMode: 'atkinson', // 'atkinson' | 'lexend' | 'classic'
   viewMode: 'day', // 'day' | 'week'
   weekFilter: 'all', // 'all' | 'studie' | 'privat'
-  autoRotate: false,
+  autoRotate: true,
   pixelShift: true,
   refreshMinutes: 10,
   name: '',
