@@ -660,8 +660,7 @@ function renderWeekOverview(week, tz) {
   if (t.busiestDay) parts.push(`Travleste dag: ${t.busiestDay}`);
   el.weekTotals.textContent = parts.join(' · ');
 
-  el.weekGrid.innerHTML = '';
-  for (const day of week.days) {
+  const buildDayColumn = (day) => {
     const col = document.createElement('article');
     col.className = 'week-day';
     if (day.isToday) col.classList.add('is-today');
@@ -705,15 +704,15 @@ function renderWeekOverview(week, tz) {
         const timeEl = document.createElement('span');
         timeEl.className = 'week-event-time';
         timeEl.textContent = evt.allDay
-          ? 'Hele dagen'
+          ? 'Heldag'
           : `${formatTime(evt.start, tz)}–${formatTime(evt.end, tz)}`;
 
-        const pill = document.createElement('span');
-        pill.className = `week-pill ${isStudie ? 'week-pill-studie' : 'week-pill-privat'}`;
-        pill.textContent = evt.calendar || (isStudie ? 'Studie' : 'Privat');
+        const dot = document.createElement('span');
+        dot.className = `week-cat-dot ${isStudie ? 'is-studie' : 'is-privat'}`;
+        dot.title = isStudie ? 'Studie' : 'Privat';
 
         top.appendChild(timeEl);
-        top.appendChild(pill);
+        top.appendChild(dot);
 
         const titleEl = document.createElement('div');
         titleEl.className = 'week-event-title';
@@ -729,30 +728,40 @@ function renderWeekOverview(week, tz) {
           li.appendChild(locEl);
         }
 
-        if (isStudie && evt.description) {
-          const cleanNote = String(evt.description)
-            .replace(/<[^>]+>/g, ' ')
-            .replace(/&nbsp;/gi, ' ')
-            .replace(/&amp;/gi, '&')
-            .replace(/https?:\/\/\S+/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-          if (cleanNote) {
-            const descEl = document.createElement('div');
-            descEl.className = 'week-event-desc';
-            descEl.textContent = cleanNote;
-            li.appendChild(descEl);
-          }
-        }
-
         list.appendChild(li);
       }
     }
 
     col.appendChild(head);
     col.appendChild(list);
-    el.weekGrid.appendChild(col);
+    return col;
+  };
+
+  el.weekGrid.innerHTML = '';
+  const days = week.days;
+  let stackedWeekend = false;
+
+  for (let i = 0; i < days.length; i++) {
+    const day = days[i];
+    const next = days[i + 1];
+    // Stack Saturday + Sunday into one clean column so Mon-Fri get generous breathing room
+    if (
+      day.weekdayShort === 'LØR' &&
+      next &&
+      next.weekdayShort === 'SØN'
+    ) {
+      const stack = document.createElement('div');
+      stack.className = 'week-weekend-stack';
+      stack.appendChild(buildDayColumn(day));
+      stack.appendChild(buildDayColumn(next));
+      el.weekGrid.appendChild(stack);
+      stackedWeekend = true;
+      i++; // Skip SØN since we stacked it
+    } else {
+      el.weekGrid.appendChild(buildDayColumn(day));
+    }
   }
+  el.weekGrid.classList.toggle('is-six-col', stackedWeekend);
 }
 
 function buildRequestOptions() {
