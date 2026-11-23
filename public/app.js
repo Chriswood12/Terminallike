@@ -9,6 +9,7 @@ const PIXEL_SHIFT_INTERVAL_MS = 2 * 60 * 1000;
 
 const DEFAULT_PREFS = {
   themeMode: 'auto', // 'auto' | 'paper' | 'oled'
+  fontMode: 'atkinson', // 'atkinson' | 'lexend' | 'classic'
   pixelShift: true,
   refreshMinutes: 10,
   name: '',
@@ -69,6 +70,7 @@ const el = {
   form: document.getElementById('settings-form'),
   inputName: document.getElementById('input-name'),
   selectTheme: document.getElementById('select-theme'),
+  selectFont: document.getElementById('select-font'),
   inputCitySearch: document.getElementById('input-city-search'),
   btnCitySearch: document.getElementById('btn-city-search'),
   cityResults: document.getElementById('city-results'),
@@ -199,6 +201,7 @@ function applyTheme() {
       : prefs.themeMode;
 
   document.documentElement.setAttribute('data-theme', resolved);
+  document.documentElement.setAttribute('data-font', prefs.fontMode || 'atkinson');
 
   const sunsetLabel = formatSunsetShort(latestBriefing?.weather?.sunset);
   if (prefs.themeMode === 'auto') {
@@ -608,6 +611,7 @@ function openSettings() {
 
   el.inputName.value = prefs.name || latestBriefing?.personName || '';
   el.selectTheme.value = prefs.themeMode;
+  el.selectFont.value = prefs.fontMode || 'atkinson';
   el.inputCitySearch.value = '';
   el.cityResults.classList.add('hidden');
   el.cityResults.innerHTML = '';
@@ -703,6 +707,7 @@ el.form.addEventListener('submit', (e) => {
   e.preventDefault();
   prefs.name = el.inputName.value.trim();
   prefs.themeMode = el.selectTheme.value;
+  prefs.fontMode = el.selectFont.value || 'atkinson';
   prefs.units = el.selectUnits.value;
   prefs.refreshMinutes = Number(el.selectRefresh.value) || 10;
   prefs.icsUrls = el.inputIcsUrls.value.trim();
