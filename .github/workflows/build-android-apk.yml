@@ -16,6 +16,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -45,3 +47,15 @@ jobs:
           name: terminallike-screensaver-apk
           path: android-screensaver/terminallike-screensaver.apk
           retention-days: 90
+
+      - name: Publish APK to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view screensaver-latest >/dev/null 2>&1; then
+            gh release upload screensaver-latest android-screensaver/terminallike-screensaver.apk --clobber
+          else
+            gh release create screensaver-latest android-screensaver/terminallike-screensaver.apk \
+              --title "Terminallike Android TV Screensaver" \
+              --notes "Direct APK download for Android TV / Google TV & Projectivy Launcher. See README.md for setup instructions."
+          fi
