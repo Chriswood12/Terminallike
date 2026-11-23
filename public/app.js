@@ -369,12 +369,13 @@ function renderBriefing(data) {
   renderUpNext(data.upNext, tz);
   renderDayRhythm(data.dayRhythm);
 
-  if (data.personalNote) {
-    el.noteText.textContent = data.personalNote;
-    el.noteBlock.classList.remove('hidden');
-  } else {
-    el.noteBlock.classList.add('hidden');
-  }
+  setupRotatingNotes(
+    Array.isArray(data.personalNotes) && data.personalNotes.length > 0
+      ? data.personalNotes
+      : data.personalNote
+        ? [data.personalNote]
+        : [],
+  );
 
   renderTodaySchedule(data.today?.events || [], tz);
   renderTomorrowPreview(data.tomorrow?.events || [], data.weather, tz);
@@ -454,6 +455,46 @@ function renderDayRhythm(rhythm) {
     ? ` · Bedste pause: ${rhythm.longestOpenWindow.label}`
     : '';
   el.rhythmStats.textContent = `${busyStr} optaget · ${freeStr} fri${openStr}`;
+}
+
+let noteRotateTimer = null;
+let noteListCache = [];
+let noteIndex = 0;
+
+function setupRotatingNotes(notes) {
+  if (!notes || notes.length === 0) {
+    if (noteRotateTimer) clearInterval(noteRotateTimer);
+    noteRotateTimer = null;
+    noteListCache = [];
+    el.noteBlock.classList.add('hidden');
+    return;
+  }
+
+  const sameList =
+    notes.length === noteListCache.length &&
+    notes.every((n, i) => n === noteListCache[i]);
+
+  if (!sameList) {
+    noteListCache = [...notes];
+    noteIndex = noteIndex % noteListCache.length;
+    el.noteText.textContent = noteListCache[noteIndex];
+  }
+
+  el.noteBlock.classList.remove('hidden');
+
+  if (noteRotateTimer) clearInterval(noteRotateTimer);
+  noteRotateTimer = null;
+
+  if (noteListCache.length > 1) {
+    noteRotateTimer = setInterval(() => {
+      el.noteText.classList.add('is-fading');
+      setTimeout(() => {
+        noteIndex = (noteIndex + 1) % noteListCache.length;
+        el.noteText.textContent = noteListCache[noteIndex];
+        el.noteText.classList.remove('is-fading');
+      }, 550);
+    }, 30000);
+  }
 }
 
 function renderTodaySchedule(events, tz) {

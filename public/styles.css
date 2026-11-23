@@ -534,6 +534,11 @@ html[data-theme='oled'] body.is-screensaver .canvas {
   letter-spacing: var(--reading-tracking);
   word-spacing: var(--reading-word-spacing);
   color: var(--ink);
+  transition: opacity 0.55s ease;
+}
+
+.note-text.is-fading {
+  opacity: 0;
 }
 
 /* ============================================================================
