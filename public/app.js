@@ -15,6 +15,8 @@ const DEFAULT_PREFS = {
   name: '',
   note: null,
   icsUrls: '',
+  aiProvider: 'auto',
+  aiApiKey: '',
   city: '',
   lat: null,
   lon: null,
@@ -78,6 +80,8 @@ const el = {
   selectUnits: document.getElementById('select-units'),
   selectRefresh: document.getElementById('select-refresh'),
   inputIcsUrls: document.getElementById('input-ics-urls'),
+  selectAiProvider: document.getElementById('select-ai-provider'),
+  inputAiKey: document.getElementById('input-ai-key'),
   inputNote: document.getElementById('input-note'),
   togglePixelShift: document.getElementById('toggle-pixel-shift'),
   toggleDemo: document.getElementById('toggle-demo'),
@@ -560,9 +564,16 @@ function buildRequestOptions() {
   if (prefs.units) payload.units = prefs.units;
   if (prefs.demo) payload.demo = '1';
 
-  // Use POST when user entered private .ics URLs locally so secrets never appear in URL query logs
-  if (prefs.icsUrls && prefs.icsUrls.trim()) {
-    payload.icsUrls = prefs.icsUrls.trim();
+  // Use POST when user entered private .ics URLs or an AI API key locally so secrets never appear in URL query logs
+  const hasSecrets =
+    (prefs.icsUrls && prefs.icsUrls.trim()) ||
+    (prefs.aiApiKey && prefs.aiApiKey.trim()) ||
+    (prefs.aiProvider && prefs.aiProvider !== 'auto');
+
+  if (hasSecrets) {
+    if (prefs.icsUrls && prefs.icsUrls.trim()) payload.icsUrls = prefs.icsUrls.trim();
+    if (prefs.aiProvider) payload.aiProvider = prefs.aiProvider;
+    if (prefs.aiApiKey && prefs.aiApiKey.trim()) payload.aiApiKey = prefs.aiApiKey.trim();
     return {
       url: '/api/briefing',
       init: {
@@ -623,6 +634,8 @@ function openSettings() {
   el.selectUnits.value = prefs.units || latestBriefing?.weather?.units || 'celsius';
   el.selectRefresh.value = String(prefs.refreshMinutes || 10);
   el.inputIcsUrls.value = prefs.icsUrls || '';
+  el.selectAiProvider.value = prefs.aiProvider || 'auto';
+  el.inputAiKey.value = prefs.aiApiKey || '';
   el.inputNote.value = prefs.note !== null ? prefs.note : latestBriefing?.personalNote || '';
   el.togglePixelShift.checked = Boolean(prefs.pixelShift);
   el.toggleDemo.checked = Boolean(prefs.demo);
@@ -711,6 +724,8 @@ el.form.addEventListener('submit', (e) => {
   prefs.units = el.selectUnits.value;
   prefs.refreshMinutes = Number(el.selectRefresh.value) || 10;
   prefs.icsUrls = el.inputIcsUrls.value.trim();
+  prefs.aiProvider = el.selectAiProvider.value || 'auto';
+  prefs.aiApiKey = el.inputAiKey.value.trim();
   prefs.note = el.inputNote.value.trim();
   prefs.pixelShift = el.togglePixelShift.checked;
   prefs.demo = el.toggleDemo.checked;

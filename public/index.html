@@ -270,6 +270,30 @@
           </div>
         </div>
 
+        <div class="field-row">
+          <div class="field">
+            <label for="select-ai-provider" class="field-label">AI-udbyder</label>
+            <select id="select-ai-provider" class="field-input">
+              <option value="auto">Auto (registrerer nøgle)</option>
+              <option value="gemini">Google Gemini</option>
+              <option value="openai">OpenAI (ChatGPT)</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="none">Ingen (kun lokal tekst)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="input-ai-key" class="field-label">AI API-nøgle (valgfri)</label>
+            <input
+              id="input-ai-key"
+              class="field-input"
+              type="password"
+              placeholder="Indsæt API-nøgle…"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+
         <div class="field">
           <label for="input-note" class="field-label">Personlig hilsen (valgfri)</label>
           <textarea
