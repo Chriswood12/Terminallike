@@ -95,9 +95,21 @@ ICS_URLS=Personal|https://calendar.google.com/calendar/ical/abc123/private-xyz/b
 3. Bookmark it as your homepage and enable **Fullscreen Mode** in TV Bro settings.
 4. After 5 seconds of inactivity, the cursor and corner controls automatically fade away.
 
-### Option 2: True Android TV Screensaver with Projectivy Launcher (Recommended)
+### Option 1: Projectivy Launcher + Overflight Plugin (Easiest — Zero ADB, Zero Sideloading)
 
-This repository includes a lightweight, zero-dependency Android TV **DreamService** screensaver app in [`android-screensaver/`](android-screensaver/) that loads your live Vercel URL fullscreen in an OLED-safe WebView (keeping the live clock, auto-at-sunset theme, and OLED pixel shift working — and waking back up to Projectivy on any remote press).
+If you already use **Projectivy Launcher** with the official **Overflight** wallpaper plugin:
+1. Open **Overflight** on your TV (or **Projectivy Settings → Appearance → Wallpaper → Overflight → Configure**).
+2. Set the custom JSON URL to:
+   ```
+   https://<your-app>.vercel.app/api/projectivy
+   ```
+   *(Optional query params: `?theme=oled` for always dark, `?theme=paper` for always light, or omit for auto-at-sunset.)*
+3. Set Overflight's **Media source cache duration** to your preferred refresh interval (e.g., 15 or 30 minutes).
+4. In **Projectivy Settings → Appearance → Launcher Idle Mode**, set UI opacity to **0%** so your home screen fades cleanly into Terminallike when idle.
+
+### Option 2: True Android TV Screensaver (Live WebView DreamService APK)
+
+This repository also includes a lightweight, zero-dependency Android TV **DreamService** screensaver app in [`android-screensaver/`](android-screensaver/) that loads your live Vercel URL fullscreen in an OLED-safe WebView (keeping the live clock, auto-at-sunset theme, and OLED pixel shift working — and waking back up to Projectivy on any remote press).
 
 #### 1. Get the APK
 - **From GitHub Actions (easiest):** Go to your repository's **Actions → Build Android TV Screensaver APK → Run workflow**, optionally enter your Vercel URL, and download `terminallike-screensaver.apk` from the workflow artifacts.

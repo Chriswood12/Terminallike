@@ -7,6 +7,8 @@ import { loadDotEnv, getConfig } from './lib/env.js';
 import briefingHandler from './api/briefing.js';
 import geocodeHandler from './api/geocode.js';
 import healthHandler from './api/health.js';
+import wallpaperHandler from './api/wallpaper.js';
+import projectivyHandler from './api/projectivy.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -78,6 +80,14 @@ export function createAppServer() {
     }
     if (url.pathname === '/api/health') {
       healthHandler(req, res);
+      return;
+    }
+    if (url.pathname === '/api/wallpaper') {
+      await wallpaperHandler(req, res);
+      return;
+    }
+    if (url.pathname === '/api/projectivy') {
+      projectivyHandler(req, res);
       return;
     }
 
