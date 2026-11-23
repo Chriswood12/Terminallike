@@ -1,15 +1,9 @@
 /* ============================================================================
-   Terminallike — 4K TV Frontend Controller
-   Features:
-     - Live /api/briefing polling + local clock
-     - Classic TRMNL Paper / OLED-Safe Ink / Auto-at-sunset theme switching
-     - Subtle OLED burn-in pixel shift (Lissajous orbit every 2 min)
-     - Idle cursor & controls auto-hide (5s)
-     - Screen Wake Lock API with automatic visibility re-acquisition
-     - Settings drawer (S) with Open-Meteo city lookup & localStorage persistence
+   Terminallike — 4K TV Frontend Controller (Dansk / da-DK)
    ============================================================================ */
 
 const STORAGE_KEY = 'terminallike_prefs_v1';
+const LOCALE = 'da-DK';
 const IDLE_MS = 5000;
 const PIXEL_SHIFT_INTERVAL_MS = 2 * 60 * 1000;
 
@@ -18,7 +12,8 @@ const DEFAULT_PREFS = {
   pixelShift: true,
   refreshMinutes: 10,
   name: '',
-  note: null, // null = use server env default; string = override
+  note: null,
+  icsUrls: '',
   city: '',
   lat: null,
   lon: null,
@@ -36,7 +31,6 @@ let pixelShiftStep = 0;
 let wakeLockSentinel = null;
 let pendingCitySelection = null;
 
-// DOM references
 const el = {
   canvas: document.getElementById('canvas'),
   greetingKicker: document.getElementById('greeting-kicker'),
@@ -48,7 +42,6 @@ const el = {
   weatherCond: document.getElementById('weather-cond'),
   weatherMeta: document.getElementById('weather-meta'),
   clockTime: document.getElementById('clock-time'),
-  clockPeriod: document.getElementById('clock-period'),
   summaryMeta: document.getElementById('summary-meta'),
   aiSummary: document.getElementById('ai-summary'),
   upNextLabel: document.getElementById('up-next-label'),
@@ -82,6 +75,7 @@ const el = {
   citySelected: document.getElementById('city-selected'),
   selectUnits: document.getElementById('select-units'),
   selectRefresh: document.getElementById('select-refresh'),
+  inputIcsUrls: document.getElementById('input-ics-urls'),
   inputNote: document.getElementById('input-note'),
   togglePixelShift: document.getElementById('toggle-pixel-shift'),
   toggleDemo: document.getElementById('toggle-demo'),
@@ -89,9 +83,6 @@ const el = {
   btnResetSettings: document.getElementById('btn-reset-settings'),
 };
 
-/* ============================================================================
-   Preferences Persistence
-   ============================================================================ */
 function loadPrefs() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -106,13 +97,10 @@ function savePrefs() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
   } catch {
-    // Ignore storage quota / private mode errors
+    // Ignore storage errors
   }
 }
 
-/* ============================================================================
-   Minimal Monochrome E-Ink Weather Icons
-   ============================================================================ */
 function getWeatherSvg(iconKey) {
   const stroke = 'currentColor';
   const common = `fill="none" stroke="${stroke}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"`;
@@ -137,62 +125,40 @@ function getWeatherSvg(iconKey) {
   }
 }
 
-/* ============================================================================
-   Formatting Helpers
-   ============================================================================ */
 function activeTimeZone() {
-  return latestBriefing?.timezone || prefs.tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return latestBriefing?.timezone || prefs.tz || 'Europe/Copenhagen';
 }
 
 function formatTime(iso, tz = activeTimeZone()) {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(LOCALE, {
     timeZone: tz,
-    hour: 'numeric',
+    hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(iso));
-}
-
-function formatClockParts(now, tz = activeTimeZone()) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz,
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).formatToParts(now);
-
-  let hour = '--';
-  let minute = '--';
-  let dayPeriod = '';
-  for (const p of parts) {
-    if (p.type === 'hour') hour = p.value;
-    if (p.type === 'minute') minute = p.value;
-    if (p.type === 'dayPeriod') dayPeriod = p.value.toUpperCase();
-  }
-  return { time: `${hour}:${minute}`, period: dayPeriod };
+    hourCycle: 'h23',
+  })
+    .format(new Date(iso))
+    .replace('.', ':');
 }
 
 function formatDuration(minutes) {
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 60) return `${minutes} min`;
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+  return m === 0 ? `${h} t` : `${h} t ${m} m`;
 }
 
 function formatSunsetShort(isoLocal) {
   if (!isoLocal) return null;
-  // Open-Meteo returns local wall-clock ISO like "2026-11-23T16:54"
   const match = /T(\d{2}):(\d{2})/.exec(isoLocal);
   if (!match) return null;
-  const h24 = Number(match[1]);
-  const m = match[2];
-  const suffix = h24 >= 12 ? 'PM' : 'AM';
-  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-  return `${h12}:${m} ${suffix}`;
+  return `${match[1]}:${match[2]}`;
 }
 
-/* ============================================================================
-   Theme Engine (Classic TRMNL Paper / OLED-Safe Ink / Auto at Sunset)
-   ============================================================================ */
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function resolveAutoTheme(weather, tz) {
   const now = new Date();
   const hm = getLocalHourMinute(now, tz);
@@ -237,11 +203,11 @@ function applyTheme() {
   const sunsetLabel = formatSunsetShort(latestBriefing?.weather?.sunset);
   if (prefs.themeMode === 'auto') {
     el.statusTheme.textContent = sunsetLabel
-      ? `Theme: Auto (${resolved === 'paper' ? 'Paper' : 'OLED'} · Sunset ${sunsetLabel})`
-      : `Theme: Auto (${resolved === 'paper' ? 'Paper' : 'OLED'})`;
+      ? `Tema: Auto (${resolved === 'paper' ? 'Papir' : 'OLED'} · Solnedgang ${sunsetLabel})`
+      : `Tema: Auto (${resolved === 'paper' ? 'Papir' : 'OLED'})`;
   } else {
     el.statusTheme.textContent =
-      resolved === 'paper' ? 'Theme: TRMNL Paper' : 'Theme: OLED-Safe Ink';
+      resolved === 'paper' ? 'Tema: TRMNL Papir' : 'Tema: OLED-sikker Blæk';
   }
 }
 
@@ -253,30 +219,28 @@ function cycleThemeMode() {
   applyTheme();
 }
 
-/* ============================================================================
-   OLED Burn-In Subtle Pixel Shift
-   ============================================================================ */
 function updatePixelShift() {
   if (!prefs.pixelShift) {
     document.documentElement.style.setProperty('--shift-x', '0px');
     document.documentElement.style.setProperty('--shift-y', '0px');
-    el.statusProtection.textContent = 'OLED Shift: Off';
+    el.statusProtection.textContent = 'OLED-forskydning: Fra';
     return;
   }
 
-  // Gentle orbital drift within ±6px X, ±4px Y
   pixelShiftStep = (pixelShiftStep + 1) % 24;
   const angle = (pixelShiftStep / 24) * Math.PI * 2;
   const x = Math.round(Math.sin(angle) * 6);
   const y = Math.round(Math.cos(angle * 2) * 4);
   document.documentElement.style.setProperty('--shift-x', `${x}px`);
   document.documentElement.style.setProperty('--shift-y', `${y}px`);
-  el.statusProtection.textContent = 'OLED Shift: On';
+  el.statusProtection.textContent = 'OLED-forskydning: Til';
 }
 
 function startPixelShift() {
   if (pixelShiftTimer) clearInterval(pixelShiftTimer);
-  el.statusProtection.textContent = prefs.pixelShift ? 'OLED Shift: On' : 'OLED Shift: Off';
+  el.statusProtection.textContent = prefs.pixelShift
+    ? 'OLED-forskydning: Til'
+    : 'OLED-forskydning: Fra';
   if (!prefs.pixelShift) {
     document.documentElement.style.setProperty('--shift-x', '0px');
     document.documentElement.style.setProperty('--shift-y', '0px');
@@ -285,35 +249,28 @@ function startPixelShift() {
   pixelShiftTimer = setInterval(updatePixelShift, PIXEL_SHIFT_INTERVAL_MS);
 }
 
-/* ============================================================================
-   Idle Cursor & Controls Auto-Hide
-   ============================================================================ */
 function resetIdleTimer() {
   document.body.classList.remove('is-idle');
   if (idleTimer) clearTimeout(idleTimer);
-  // Keep cursor & controls visible while Settings drawer is open
   if (!el.drawer.classList.contains('hidden')) return;
   idleTimer = setTimeout(() => {
     document.body.classList.add('is-idle');
   }, IDLE_MS);
 }
 
-/* ============================================================================
-   Screen Wake Lock API
-   ============================================================================ */
 async function acquireWakeLock() {
   if (!('wakeLock' in navigator)) {
-    el.wakelockStatus.textContent = 'Screen Wake Lock: Not supported in this browser';
+    el.wakelockStatus.textContent = 'Skærmlås (Wake Lock): Ikke understøttet i denne browser';
     return;
   }
   try {
     wakeLockSentinel = await navigator.wakeLock.request('screen');
-    el.wakelockStatus.textContent = 'Screen Wake Lock: Active (display kept awake)';
+    el.wakelockStatus.textContent = 'Skærmlås (Wake Lock): Aktiv (skærmen holdes vågen)';
     wakeLockSentinel.addEventListener('release', () => {
-      el.wakelockStatus.textContent = 'Screen Wake Lock: Standby';
+      el.wakelockStatus.textContent = 'Skærmlås (Wake Lock): Standby';
     });
   } catch {
-    el.wakelockStatus.textContent = 'Screen Wake Lock: Waiting for interaction';
+    el.wakelockStatus.textContent = 'Skærmlås (Wake Lock): Afventer interaktion';
   }
 }
 
@@ -323,22 +280,18 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-/* ============================================================================
-   Rendering
-   ============================================================================ */
 function updateClock() {
   const now = new Date();
   const tz = activeTimeZone();
-  const { time, period } = formatClockParts(now, tz);
-  el.clockTime.textContent = time;
-  el.clockPeriod.textContent = period;
+  el.clockTime.textContent = formatTime(now.toISOString(), tz);
 
-  el.dateHeading.textContent = new Intl.DateTimeFormat('en-US', {
+  const formattedDate = new Intl.DateTimeFormat(LOCALE, {
     timeZone: tz,
     weekday: 'long',
-    month: 'long',
     day: 'numeric',
+    month: 'long',
   }).format(now);
+  el.dateHeading.textContent = capitalize(formattedDate);
 
   if (prefs.themeMode === 'auto' && latestBriefing) {
     applyTheme();
@@ -349,19 +302,17 @@ function renderBriefing(data) {
   latestBriefing = data;
   const tz = data.timezone;
 
-  // Masthead
   el.greetingKicker.textContent = data.greeting.toUpperCase();
   el.demoBadge.classList.toggle('hidden', !data.demoMode);
 
   if (data.meta?.warnings?.length) {
-    el.warningBadge.textContent = `${data.meta.warnings.length} FEED NOTICE`;
+    el.warningBadge.textContent = `${data.meta.warnings.length} KALENDER-ADVARSEL`;
     el.warningBadge.title = data.meta.warnings.join('\n');
     el.warningBadge.classList.remove('hidden');
   } else {
     el.warningBadge.classList.add('hidden');
   }
 
-  // Weather
   const w = data.weather;
   el.weatherIcon.innerHTML = getWeatherSvg(w?.icon || 'sun-cloud');
   if (w && w.available && w.temperature !== null) {
@@ -371,30 +322,25 @@ function renderBriefing(data) {
     const metaParts = [
       w.locationName,
       `H ${w.high}° · L ${w.low}°`,
-      sunsetText ? `Sunset ${sunsetText}` : null,
+      sunsetText ? `Solnedgang ${sunsetText}` : null,
     ].filter(Boolean);
     el.weatherMeta.textContent = metaParts.join(' · ');
   } else {
     el.weatherTemp.textContent = '--°';
-    el.weatherCond.textContent = 'Forecast offline';
-    el.weatherMeta.textContent = w?.locationName || 'Check network connection';
+    el.weatherCond.textContent = 'Vejr offline';
+    el.weatherMeta.textContent = w?.locationName || 'Tjek netværksforbindelsen';
   }
 
-  // AI Daily Briefing
-  el.aiSummary.textContent = data.summary?.text || 'No summary available.';
+  el.aiSummary.textContent = data.summary?.text || 'Intet overblik tilgængeligt.';
   const providerLabel =
     data.summary?.provider && data.summary.provider !== 'local'
       ? `AI · ${data.summary.provider.toUpperCase()}`
-      : 'SMART SUMMARY';
-  el.summaryMeta.textContent = `${providerLabel}${data.summary?.cached ? ' · CACHED' : ''}`;
+      : 'SMART OVERBLIK';
+  el.summaryMeta.textContent = `${providerLabel}${data.summary?.cached ? ' · GEMT' : ''}`;
 
-  // Up Next Spotlight
   renderUpNext(data.upNext, tz);
-
-  // Day Rhythm Bar (7 AM – 9 PM)
   renderDayRhythm(data.dayRhythm);
 
-  // Personal Note
   if (data.personalNote) {
     el.noteText.textContent = data.personalNote;
     el.noteBlock.classList.remove('hidden');
@@ -402,14 +348,10 @@ function renderBriefing(data) {
     el.noteBlock.classList.add('hidden');
   }
 
-  // Today's Schedule
   renderTodaySchedule(data.today?.events || [], tz);
-
-  // Tomorrow Preview
   renderTomorrowPreview(data.tomorrow?.events || [], data.weather, tz);
 
-  // Footer Sync Status
-  el.statusSync.textContent = `Synced ${formatTime(data.generatedAt, tz)}`;
+  el.statusSync.textContent = `Opdateret ${formatTime(data.generatedAt, tz)}`;
 
   updateClock();
   applyTheme();
@@ -417,29 +359,29 @@ function renderBriefing(data) {
 
 function renderUpNext(upNext, tz) {
   if (!upNext || !upNext.event) {
-    el.upNextLabel.textContent = 'UP NEXT';
-    el.upNextCountdown.textContent = 'ALL CLEAR';
-    el.upNextTitle.textContent = 'Open evening ahead';
-    el.upNextMeta.textContent = 'No remaining scheduled events.';
+    el.upNextLabel.textContent = 'NÆSTE PÅ PROGRAMMET';
+    el.upNextCountdown.textContent = 'HELT FRI';
+    el.upNextTitle.textContent = 'Fri resten af dagen';
+    el.upNextMeta.textContent = 'Ingen flere planlagte aftaler.';
     return;
   }
 
   const evt = upNext.event;
   if (upNext.status === 'now') {
-    el.upNextLabel.textContent = 'HAPPENING NOW';
-    el.upNextCountdown.textContent = `${formatDuration(upNext.minutesRemaining)} LEFT`;
+    el.upNextLabel.textContent = 'I GANG NU';
+    el.upNextCountdown.textContent = `${formatDuration(upNext.minutesRemaining)} TILBAGE`;
   } else if (upNext.status === 'upcoming') {
-    el.upNextLabel.textContent = 'UP NEXT';
-    el.upNextCountdown.textContent = `IN ${formatDuration(upNext.minutesUntil)}`;
+    el.upNextLabel.textContent = 'NÆSTE PÅ PROGRAMMET';
+    el.upNextCountdown.textContent = `OM ${formatDuration(upNext.minutesUntil)}`;
   } else {
-    el.upNextLabel.textContent = 'FIRST UP TOMORROW';
-    el.upNextCountdown.textContent = evt.allDay ? 'ALL DAY' : formatTime(evt.start, tz);
+    el.upNextLabel.textContent = 'FØRST I MORGEN';
+    el.upNextCountdown.textContent = evt.allDay ? 'HELE DAGEN' : `KL. ${formatTime(evt.start, tz)}`;
   }
 
   el.upNextTitle.textContent = evt.title;
 
   const metaBits = [
-    evt.allDay ? 'All day' : `${formatTime(evt.start, tz)} – ${formatTime(evt.end, tz)}`,
+    evt.allDay ? 'Hele dagen' : `${formatTime(evt.start, tz)} – ${formatTime(evt.end, tz)}`,
     evt.location || null,
     evt.calendar || null,
   ].filter(Boolean);
@@ -449,7 +391,6 @@ function renderUpNext(upNext, tz) {
 function renderDayRhythm(rhythm) {
   el.rhythmTrack.innerHTML = '';
 
-  // Draw 2-hour tick guides (9a, 11a, 1p, 3p, 5p, 7p)
   for (let i = 1; i < 7; i++) {
     const tick = document.createElement('div');
     tick.className = 'rhythm-tick';
@@ -481,40 +422,38 @@ function renderDayRhythm(rhythm) {
   const busyStr = formatDuration(rhythm.busyMinutes || 0);
   const freeStr = formatDuration(rhythm.freeMinutes || 0);
   const openStr = rhythm.longestOpenWindow
-    ? ` · Best open: ${rhythm.longestOpenWindow.label}`
+    ? ` · Bedste pause: ${rhythm.longestOpenWindow.label}`
     : '';
-  el.rhythmStats.textContent = `${busyStr} booked · ${freeStr} open${openStr}`;
+  el.rhythmStats.textContent = `${busyStr} optaget · ${freeStr} fri${openStr}`;
 }
 
 function renderTodaySchedule(events, tz) {
   const allDay = events.filter((e) => e.allDay);
   const timed = events.filter((e) => !e.allDay);
 
-  el.todayCount.textContent = `${events.length} ${events.length === 1 ? 'event' : 'events'}`;
+  el.todayCount.textContent = `${events.length} ${events.length === 1 ? 'aftale' : 'aftaler'}`;
 
-  // All-day chips
   el.alldayStrip.innerHTML = '';
   if (allDay.length > 0) {
     el.alldayStrip.classList.remove('hidden');
     for (const evt of allDay) {
       const chip = document.createElement('span');
       chip.className = 'allday-chip';
-      chip.textContent = `ALL DAY · ${evt.title}`;
+      chip.textContent = `HELE DAGEN · ${evt.title}`;
       el.alldayStrip.appendChild(chip);
     }
   } else {
     el.alldayStrip.classList.add('hidden');
   }
 
-  // Timed events list
   el.todayList.innerHTML = '';
   if (timed.length === 0) {
     const li = document.createElement('li');
     li.className = 'empty-state';
     li.textContent =
       allDay.length > 0
-        ? 'No timed events today — enjoy the open schedule.'
-        : 'Your schedule is completely clear today.';
+        ? 'Ingen tidsbestemte aftaler i dag — nyd den frie dag.'
+        : 'Din kalender er helt fri i dag.';
     el.todayList.appendChild(li);
     return;
   }
@@ -576,13 +515,13 @@ function renderTomorrowPreview(events, weather, tz) {
     weather?.available && weather.tomorrowHigh !== null
       ? ` · ${weather.tomorrowCondition} ${weather.tomorrowHigh}°/${weather.tomorrowLow}°`
       : '';
-  el.tomorrowMeta.textContent = `${events.length} ${events.length === 1 ? 'event' : 'events'}${weatherPart}`;
+  el.tomorrowMeta.textContent = `${events.length} ${events.length === 1 ? 'aftale' : 'aftaler'}${weatherPart}`;
 
   el.tomorrowList.innerHTML = '';
   if (events.length === 0) {
     const li = document.createElement('li');
     li.className = 'empty-state';
-    li.textContent = 'Clear calendar tomorrow.';
+    li.textContent = 'Ingen aftaler i morgen.';
     el.tomorrowList.appendChild(li);
     return;
   }
@@ -593,7 +532,7 @@ function renderTomorrowPreview(events, weather, tz) {
 
     const timeEl = document.createElement('span');
     timeEl.className = 'tomorrow-time';
-    timeEl.textContent = evt.allDay ? 'All day' : formatTime(evt.start, tz);
+    timeEl.textContent = evt.allDay ? 'Hele dagen' : formatTime(evt.start, tz);
 
     const titleEl = document.createElement('span');
     titleEl.className = 'tomorrow-title';
@@ -605,34 +544,53 @@ function renderTomorrowPreview(events, weather, tz) {
   }
 }
 
-/* ============================================================================
-   API Data Fetching
-   ============================================================================ */
-function buildBriefingUrl() {
-  const params = new URLSearchParams();
-  if (prefs.name) params.set('name', prefs.name);
-  if (prefs.note !== null) params.set('note', prefs.note);
-  if (prefs.city) params.set('city', prefs.city);
+function buildRequestOptions() {
+  const payload = {};
+  if (prefs.name) payload.name = prefs.name;
+  if (prefs.note !== null) payload.note = prefs.note;
+  if (prefs.city) payload.city = prefs.city;
   if (prefs.lat !== null && prefs.lon !== null) {
-    params.set('lat', String(prefs.lat));
-    params.set('lon', String(prefs.lon));
+    payload.lat = prefs.lat;
+    payload.lon = prefs.lon;
   }
-  if (prefs.tz) params.set('tz', prefs.tz);
-  if (prefs.units) params.set('units', prefs.units);
-  if (prefs.demo) params.set('demo', '1');
+  if (prefs.tz) payload.tz = prefs.tz;
+  if (prefs.units) payload.units = prefs.units;
+  if (prefs.demo) payload.demo = '1';
 
+  // Use POST when user entered private .ics URLs locally so secrets never appear in URL query logs
+  if (prefs.icsUrls && prefs.icsUrls.trim()) {
+    payload.icsUrls = prefs.icsUrls.trim();
+    return {
+      url: '/api/briefing',
+      init: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+      },
+    };
+  }
+
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(payload)) {
+    params.set(k, String(v));
+  }
   const qs = params.toString();
-  return qs ? `/api/briefing?${qs}` : '/api/briefing';
+  return {
+    url: qs ? `/api/briefing?${qs}` : '/api/briefing',
+    init: { method: 'GET', cache: 'no-store' },
+  };
 }
 
 async function fetchBriefing() {
   try {
-    const res = await fetch(buildBriefingUrl(), { cache: 'no-store' });
+    const { url, init } = buildRequestOptions();
+    const res = await fetch(url, init);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     renderBriefing(data);
   } catch (err) {
-    el.statusSync.textContent = `Sync retry pending (${err.message})`;
+    el.statusSync.textContent = `Afventer opdatering (${err.message})`;
   }
 }
 
@@ -642,9 +600,6 @@ function scheduleRefresh() {
   refreshTimer = setInterval(fetchBriefing, minutes * 60 * 1000);
 }
 
-/* ============================================================================
-   Settings Drawer & Open-Meteo City Lookup
-   ============================================================================ */
 function openSettings() {
   pendingCitySelection =
     prefs.lat !== null && prefs.lon !== null
@@ -657,12 +612,13 @@ function openSettings() {
   el.cityResults.classList.add('hidden');
   el.cityResults.innerHTML = '';
 
-  const currentCity = prefs.city || latestBriefing?.location?.name || 'Default location';
-  const currentTz = prefs.tz || latestBriefing?.timezone || '';
-  el.citySelected.textContent = `Current: ${currentCity}${currentTz ? ` (${currentTz})` : ''}`;
+  const currentCity = prefs.city || latestBriefing?.location?.name || 'København, DK';
+  const currentTz = prefs.tz || latestBriefing?.timezone || 'Europe/Copenhagen';
+  el.citySelected.textContent = `Valgt: ${currentCity}${currentTz ? ` (${currentTz})` : ''}`;
 
-  el.selectUnits.value = prefs.units || latestBriefing?.weather?.units || 'fahrenheit';
+  el.selectUnits.value = prefs.units || latestBriefing?.weather?.units || 'celsius';
   el.selectRefresh.value = String(prefs.refreshMinutes || 10);
+  el.inputIcsUrls.value = prefs.icsUrls || '';
   el.inputNote.value = prefs.note !== null ? prefs.note : latestBriefing?.personalNote || '';
   el.togglePixelShift.checked = Boolean(prefs.pixelShift);
   el.toggleDemo.checked = Boolean(prefs.demo);
@@ -684,7 +640,7 @@ async function performCityLookup() {
   const q = el.inputCitySearch.value.trim();
   if (q.length < 2) return;
 
-  el.cityResults.innerHTML = '<div class="city-option">Searching…</div>';
+  el.cityResults.innerHTML = '<div class="city-option">Søger…</div>';
   el.cityResults.classList.remove('hidden');
 
   try {
@@ -694,7 +650,7 @@ async function performCityLookup() {
     el.cityResults.innerHTML = '';
 
     if (results.length === 0) {
-      el.cityResults.innerHTML = '<div class="city-option">No matching cities found.</div>';
+      el.cityResults.innerHTML = '<div class="city-option">Ingen byer fundet.</div>';
       return;
     }
 
@@ -710,14 +666,14 @@ async function performCityLookup() {
           lon: city.lon,
           timezone: city.timezone,
         };
-        el.citySelected.textContent = `Selected: ${pendingCitySelection.name} (${pendingCitySelection.timezone})`;
+        el.citySelected.textContent = `Valgt: ${pendingCitySelection.name} (${pendingCitySelection.timezone})`;
         el.cityResults.classList.add('hidden');
         el.inputCitySearch.value = pendingCitySelection.name;
       });
       el.cityResults.appendChild(btn);
     }
   } catch {
-    el.cityResults.innerHTML = '<div class="city-option">City lookup unavailable offline.</div>';
+    el.cityResults.innerHTML = '<div class="city-option">Bysøgning er offline.</div>';
   }
 }
 
@@ -729,9 +685,6 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-/* ============================================================================
-   Event Listeners & Initialization
-   ============================================================================ */
 el.btnTheme.addEventListener('click', cycleThemeMode);
 el.btnRefresh.addEventListener('click', fetchBriefing);
 el.btnSettings.addEventListener('click', openSettings);
@@ -752,6 +705,7 @@ el.form.addEventListener('submit', (e) => {
   prefs.themeMode = el.selectTheme.value;
   prefs.units = el.selectUnits.value;
   prefs.refreshMinutes = Number(el.selectRefresh.value) || 10;
+  prefs.icsUrls = el.inputIcsUrls.value.trim();
   prefs.note = el.inputNote.value.trim();
   prefs.pixelShift = el.togglePixelShift.checked;
   prefs.demo = el.toggleDemo.checked;
@@ -782,7 +736,6 @@ el.btnResetSettings.addEventListener('click', () => {
   fetchBriefing();
 });
 
-// Keyboard & Google TV Remote Shortcuts
 document.addEventListener('keydown', (e) => {
   resetIdleTimer();
   const isTyping =
@@ -813,7 +766,6 @@ document.addEventListener('keydown', (e) => {
   document.addEventListener(evtName, resetIdleTimer, { passive: true });
 });
 
-// Boot
 applyTheme();
 updateClock();
 setInterval(updateClock, 15000);

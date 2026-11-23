@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="paper">
+<html lang="da" data-theme="paper">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <meta
       name="description"
-      content="TRMNL-inspired 4K TV daily calendar and AI-generated briefing screensaver."
+      content="TRMNL-inspireret 4K TV-pauseskærm med dagens kalender og AI-genereret overblik."
     />
-    <title>Daily Briefing — TRMNL TV Display</title>
+    <title>Dagens overblik — TRMNL TV-skærm</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,20 +20,24 @@
   <body>
     <div id="canvas" class="canvas">
       <!-- Top Masthead -->
-      <header class="masthead" aria-label="Date, time, and weather">
+      <header class="masthead" aria-label="Dato, tid og vejr">
         <div class="masthead-left">
           <div class="kicker-row">
-            <span id="greeting-kicker" class="mono-label">GOOD MORNING</span>
-            <span id="demo-badge" class="badge hidden" title="Showing sample schedule until ICS_URLS is configured">
-              DEMO MODE
+            <span id="greeting-kicker" class="mono-label">GODMORGEN</span>
+            <span
+              id="demo-badge"
+              class="badge hidden"
+              title="Viser eksempelkalender indtil ICS_URLS er tilføjet"
+            >
+              DEMO-TILSTAND
             </span>
             <span id="warning-badge" class="badge badge-warn hidden"></span>
           </div>
-          <h1 id="date-heading" class="date-heading">Loading day…</h1>
+          <h1 id="date-heading" class="date-heading">Henter dagen…</h1>
         </div>
 
         <div class="masthead-right">
-          <div class="weather-block" aria-label="Local weather">
+          <div class="weather-block" aria-label="Lokalt vejr">
             <div id="weather-icon" class="weather-icon" aria-hidden="true"></div>
             <div class="weather-details">
               <div class="weather-primary">
@@ -41,14 +45,13 @@
                 <span id="weather-cond" class="weather-cond">—</span>
               </div>
               <div id="weather-meta" class="weather-meta mono-sub">
-                Loading local forecast…
+                Henter lokal vejrudsigt…
               </div>
             </div>
           </div>
 
-          <div class="clock-block" aria-label="Current time">
+          <div class="clock-block" aria-label="Aktuel tid">
             <div id="clock-time" class="clock-time">--:--</div>
-            <div id="clock-period" class="clock-period mono-sub">--</div>
           </div>
         </div>
       </header>
@@ -56,34 +59,34 @@
       <!-- Main Editorial Grid -->
       <main class="main-grid">
         <!-- Left Column: AI Briefing, Up Next Spotlight, Day Rhythm, Personal Note -->
-        <section class="col-left" aria-label="Daily overview">
+        <section class="col-left" aria-label="Dagsoverblik">
           <!-- AI Daily Briefing -->
           <article class="section-block briefing-block">
             <div class="section-header">
-              <span class="mono-label">DAILY BRIEFING</span>
-              <span id="summary-meta" class="mono-sub">Preparing summary…</span>
+              <span class="mono-label">DAGENS OVERBLIK</span>
+              <span id="summary-meta" class="mono-sub">Forbereder overblik…</span>
             </div>
             <p id="ai-summary" class="briefing-text">
-              Gathering today’s schedule and local forecast…
+              Samler dagens program og lokale vejrudsigt…
             </p>
           </article>
 
           <!-- Up Next Spotlight -->
-          <article id="up-next-card" class="spotlight-card" aria-label="Up next event">
+          <article id="up-next-card" class="spotlight-card" aria-label="Næste aftale">
             <div class="spotlight-top">
-              <span id="up-next-label" class="mono-label spotlight-kicker">UP NEXT</span>
+              <span id="up-next-label" class="mono-label spotlight-kicker">NÆSTE PÅ PROGRAMMET</span>
               <span id="up-next-countdown" class="mono-label spotlight-countdown">—</span>
             </div>
-            <h2 id="up-next-title" class="spotlight-title">Clear ahead</h2>
+            <h2 id="up-next-title" class="spotlight-title">Fri kalender</h2>
             <div id="up-next-meta" class="spotlight-meta">
-              No remaining timed events scheduled.
+              Ingen flere tidsbestemte aftaler i dag.
             </div>
           </article>
 
-          <!-- Day Rhythm Bar (7 AM – 9 PM) -->
-          <article class="section-block rhythm-block" aria-label="Day rhythm from 7 AM to 9 PM">
+          <!-- Day Rhythm Bar (07 – 21) -->
+          <article class="section-block rhythm-block" aria-label="Dagsrytme fra kl. 07 til 21">
             <div class="section-header">
-              <span class="mono-label">DAY RHYTHM · 7 AM – 9 PM</span>
+              <span class="mono-label">DAGSRYTME · 07 – 21</span>
               <span id="rhythm-stats" class="mono-sub">—</span>
             </div>
             <div class="rhythm-track-wrap">
@@ -91,45 +94,45 @@
                 <!-- Hour grid lines & event blocks injected by app.js -->
               </div>
               <div class="rhythm-axis mono-sub" aria-hidden="true">
-                <span>7a</span>
-                <span>9a</span>
-                <span>11a</span>
-                <span>1p</span>
-                <span>3p</span>
-                <span>5p</span>
-                <span>7p</span>
-                <span>9p</span>
+                <span>07</span>
+                <span>09</span>
+                <span>11</span>
+                <span>13</span>
+                <span>15</span>
+                <span>17</span>
+                <span>19</span>
+                <span>21</span>
               </div>
             </div>
           </article>
 
           <!-- Optional Personal Note -->
-          <aside id="personal-note-block" class="note-block hidden" aria-label="Personal note">
-            <span class="mono-label note-kicker">NOTE</span>
+          <aside id="personal-note-block" class="note-block hidden" aria-label="Personlig hilsen">
+            <span class="mono-label note-kicker">HILSEN</span>
             <p id="personal-note-text" class="note-text"></p>
           </aside>
         </section>
 
         <!-- Right Column: Today's Schedule + Tomorrow Preview -->
-        <section class="col-right" aria-label="Calendar schedule">
+        <section class="col-right" aria-label="Kalenderprogram">
           <article class="schedule-block">
             <div class="section-header">
-              <span class="mono-label">TODAY’S SCHEDULE</span>
-              <span id="today-count" class="mono-sub">0 events</span>
+              <span class="mono-label">DAGENS PROGRAM</span>
+              <span id="today-count" class="mono-sub">0 aftaler</span>
             </div>
             <div id="allday-strip" class="allday-strip hidden"></div>
             <ol id="today-list" class="event-list">
-              <li class="empty-state">Loading schedule…</li>
+              <li class="empty-state">Henter kalender…</li>
             </ol>
           </article>
 
           <article class="tomorrow-block">
             <div class="section-header">
-              <span class="mono-label">TOMORROW</span>
+              <span class="mono-label">I MORGEN</span>
               <span id="tomorrow-meta" class="mono-sub">—</span>
             </div>
             <ol id="tomorrow-list" class="tomorrow-list">
-              <li class="empty-state">No events scheduled for tomorrow.</li>
+              <li class="empty-state">Ingen aftaler i morgen.</li>
             </ol>
           </article>
         </section>
@@ -138,32 +141,32 @@
       <!-- Minimal TRMNL Footer Status Bar -->
       <footer class="footer-bar">
         <div class="footer-left mono-sub">
-          <span id="status-sync">Synced —</span>
+          <span id="status-sync">Opdateret —</span>
           <span class="sep">·</span>
-          <span id="status-theme">Theme: Auto</span>
+          <span id="status-theme">Tema: Auto</span>
           <span class="sep">·</span>
-          <span id="status-protection">OLED Shift: On</span>
+          <span id="status-protection">OLED-forskydning: Til</span>
         </div>
         <div class="footer-right mono-sub">
-          <span>S Settings</span>
+          <span>S Indstillinger</span>
           <span class="sep">·</span>
-          <span>T Theme</span>
+          <span>T Tema</span>
           <span class="sep">·</span>
-          <span>R Refresh</span>
+          <span>R Opdater</span>
         </div>
       </footer>
     </div>
 
     <!-- Floating Corner Controls (auto-hide when idle) -->
-    <nav id="floating-controls" class="floating-controls" aria-label="Display controls">
-      <button id="btn-theme" class="ctrl-btn" type="button" title="Cycle theme (T)">
-        Theme
+    <nav id="floating-controls" class="floating-controls" aria-label="Skærmkontrol">
+      <button id="btn-theme" class="ctrl-btn" type="button" title="Skift tema (T)">
+        Tema
       </button>
-      <button id="btn-refresh" class="ctrl-btn" type="button" title="Refresh briefing (R)">
-        Refresh
+      <button id="btn-refresh" class="ctrl-btn" type="button" title="Opdater (R)">
+        Opdater
       </button>
-      <button id="btn-settings" class="ctrl-btn ctrl-btn-primary" type="button" title="Open settings (S)">
-        Settings
+      <button id="btn-settings" class="ctrl-btn ctrl-btn-primary" type="button" title="Åbn indstillinger (S)">
+        Indstillinger
       </button>
     </nav>
 
@@ -180,46 +183,46 @@
     >
       <div class="drawer-header">
         <div>
-          <span class="mono-label">DISPLAY PREFERENCES</span>
-          <h2 id="settings-title" class="drawer-title">Settings</h2>
+          <span class="mono-label">SKÆRMINDSTILLINGER</span>
+          <h2 id="settings-title" class="drawer-title">Indstillinger</h2>
         </div>
-        <button id="btn-close-settings" class="icon-btn" type="button" aria-label="Close settings">
+        <button id="btn-close-settings" class="icon-btn" type="button" aria-label="Luk indstillinger">
           ✕
         </button>
       </div>
 
       <form id="settings-form" class="drawer-body">
         <div class="field">
-          <label for="input-name" class="field-label">Display Name</label>
+          <label for="input-name" class="field-label">Navn på skærmen</label>
           <input
             id="input-name"
             class="field-input"
             type="text"
-            placeholder="e.g., Maya"
+            placeholder="f.eks. Freja"
             autocomplete="off"
           />
         </div>
 
         <div class="field">
-          <label for="select-theme" class="field-label">Theme Mode</label>
+          <label for="select-theme" class="field-label">Tema</label>
           <select id="select-theme" class="field-input">
-            <option value="auto">Auto at Sunset (Paper by day, OLED at night)</option>
-            <option value="paper">TRMNL Paper E-Ink (Light)</option>
-            <option value="oled">OLED-Safe Ink (Pure Black Dark)</option>
+            <option value="auto">Auto ved solnedgang (Papir om dagen, OLED om aftenen)</option>
+            <option value="paper">TRMNL Papir E-Ink (Lys)</option>
+            <option value="oled">OLED-sikker Blæk (Ren sort mørk)</option>
           </select>
         </div>
 
         <div class="field">
-          <label for="input-city-search" class="field-label">City Lookup (Open-Meteo)</label>
+          <label for="input-city-search" class="field-label">Bysøgning (Open-Meteo)</label>
           <div class="city-search-row">
             <input
               id="input-city-search"
               class="field-input"
               type="text"
-              placeholder="Search city (e.g., Austin, Tokyo, London)…"
+              placeholder="Søg by (f.eks. København, Aarhus, Odense)…"
               autocomplete="off"
             />
-            <button id="btn-city-search" class="ctrl-btn" type="button">Find</button>
+            <button id="btn-city-search" class="ctrl-btn" type="button">Søg</button>
           </div>
           <div id="city-results" class="city-results hidden" role="listbox"></div>
           <div id="city-selected" class="field-hint mono-sub"></div>
@@ -227,60 +230,73 @@
 
         <div class="field-row">
           <div class="field">
-            <label for="select-units" class="field-label">Temperature</label>
+            <label for="select-units" class="field-label">Temperatur</label>
             <select id="select-units" class="field-input">
-              <option value="fahrenheit">Fahrenheit (°F)</option>
               <option value="celsius">Celsius (°C)</option>
+              <option value="fahrenheit">Fahrenheit (°F)</option>
             </select>
           </div>
 
           <div class="field">
-            <label for="select-refresh" class="field-label">Auto-Refresh</label>
+            <label for="select-refresh" class="field-label">Opdatering</label>
             <select id="select-refresh" class="field-input">
-              <option value="5">Every 5 min</option>
-              <option value="10">Every 10 min</option>
-              <option value="15">Every 15 min</option>
-              <option value="30">Every 30 min</option>
+              <option value="5">Hvert 5. min</option>
+              <option value="10">Hvert 10. min</option>
+              <option value="15">Hvert 15. min</option>
+              <option value="30">Hvert 30. min</option>
             </select>
           </div>
         </div>
 
         <div class="field">
-          <label for="input-note" class="field-label">Personal Note (Optional)</label>
+          <label for="input-ics-urls" class="field-label">Kalender-links (.ics — valgfri overstyring)</label>
+          <textarea
+            id="input-ics-urls"
+            class="field-input field-textarea"
+            rows="2"
+            placeholder="Privat|https://calendar.google.com/calendar/ical/.../basic.ics (én pr. linje — eller sæt ICS_URLS i Vercel)"
+          ></textarea>
+          <div class="field-hint mono-sub">
+            Gemmes kun lokalt i denne browser. Til Google TV anbefales Vercel Environment Variables.
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="input-note" class="field-label">Personlig hilsen (valgfri)</label>
           <textarea
             id="input-note"
             class="field-input field-textarea"
             rows="2"
-            placeholder="Leave a sweet note for the screen…"
+            placeholder="Skriv en sød besked til skærmen…"
           ></textarea>
         </div>
 
         <div class="toggle-group">
           <label class="toggle-row" for="toggle-pixel-shift">
             <span>
-              <strong>OLED Burn-In Pixel Shift</strong>
-              <small>Subtly orbits canvas by a few pixels every 2 minutes</small>
+              <strong>OLED-forskydning (burn-in beskyttelse)</strong>
+              <small>Flytter billedet diskret få pixels hvert 2. minut</small>
             </span>
             <input id="toggle-pixel-shift" type="checkbox" checked />
           </label>
 
           <label class="toggle-row" for="toggle-demo">
             <span>
-              <strong>Preview Demo Schedule</strong>
-              <small>Show sample calendar data instead of live .ics feeds</small>
+              <strong>Vis demo-kalender</strong>
+              <small>Viser eksempeldata i stedet for rigtige .ics-kalendere</small>
             </span>
             <input id="toggle-demo" type="checkbox" />
           </label>
         </div>
 
         <div class="drawer-status mono-sub">
-          <span id="wakelock-status">Screen Wake Lock: Checking…</span>
+          <span id="wakelock-status">Skærmlås (Wake Lock): Tjekker…</span>
         </div>
 
         <div class="drawer-actions">
-          <button id="btn-reset-settings" class="ctrl-btn" type="button">Reset</button>
+          <button id="btn-reset-settings" class="ctrl-btn" type="button">Nulstil</button>
           <button id="btn-save-settings" class="ctrl-btn ctrl-btn-primary" type="submit">
-            Save &amp; Apply
+            Gem og anvend
           </button>
         </div>
       </form>

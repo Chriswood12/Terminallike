@@ -22,7 +22,7 @@ describe('parseIcsFeeds', () => {
       label: 'Work',
       url: 'https://p123-caldav.icloud.com/published/2/abc',
     });
-    assert.equal(feeds[2].label, 'Calendar 3');
+    assert.equal(feeds[2].label, 'Kalender 3');
   });
 });
 

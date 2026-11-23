@@ -31,7 +31,7 @@ describe('HTTP server endpoints', () => {
     assert.equal(htmlRes.status, 200);
     assert.match(htmlRes.headers.get('content-type') || '', /text\/html/);
     const html = await htmlRes.text();
-    assert.match(html, /DAILY BRIEFING/);
+    assert.match(html, /DAGENS OVERBLIK/);
 
     const cssRes = await fetch(`${baseUrl}/styles.css`);
     assert.equal(cssRes.status, 200);
@@ -42,15 +42,26 @@ describe('HTTP server endpoints', () => {
     assert.match(jsRes.headers.get('content-type') || '', /javascript/);
   });
 
-  it('serves /api/briefing in demo mode', async () => {
-    const res = await fetch(`${baseUrl}/api/briefing?demo=1&name=Maya&tz=America/Los_Angeles`);
+  it('serves /api/briefing in demo mode via GET and POST', async () => {
+    const res = await fetch(`${baseUrl}/api/briefing?demo=1&name=Freja&tz=Europe/Copenhagen`);
     assert.equal(res.status, 200);
     const data = await res.json();
     assert.equal(data.demoMode, true);
-    assert.equal(data.personName, 'Maya');
+    assert.equal(data.personName, 'Freja');
+    assert.equal(data.locale, 'da-DK');
     assert.ok(Array.isArray(data.today.events));
     assert.ok(Array.isArray(data.tomorrow.events));
     assert.ok(typeof data.summary.text === 'string' && data.summary.text.length > 10);
+
+    const postRes = await fetch(`${baseUrl}/api/briefing`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ demo: '1', name: 'Sofie', note: 'God dag!' }),
+    });
+    assert.equal(postRes.status, 200);
+    const postData = await postRes.json();
+    assert.equal(postData.personName, 'Sofie');
+    assert.equal(postData.personalNote, 'God dag!');
   });
 
   it('blocks path traversal attempts', async () => {
