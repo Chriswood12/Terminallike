@@ -1,0 +1,16 @@
+{
+  "name": "terminallike",
+  "version": "1.0.0",
+  "description": "TRMNL-inspired 4K TV screensaver displaying a daily calendar and AI-generated briefing",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
