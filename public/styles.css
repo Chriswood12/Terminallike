@@ -132,6 +132,14 @@ body.is-screensaver .footer-right {
   display: none;
 }
 
+body.is-screensaver .canvas {
+  filter: brightness(var(--screensaver-dim, 0.78));
+}
+
+html[data-theme='oled'] body.is-screensaver .canvas {
+  filter: brightness(var(--screensaver-dim, 0.65));
+}
+
 /* Main Viewport Canvas with Burn-In Pixel Shift */
 .canvas {
   position: relative;

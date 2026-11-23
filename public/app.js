@@ -6,8 +6,12 @@ const STORAGE_KEY = 'terminallike_prefs_v1';
 const LOCALE = 'da-DK';
 const IDLE_MS = 5000;
 const PIXEL_SHIFT_INTERVAL_MS = 2 * 60 * 1000;
-const IS_SCREENSAVER =
-  new URLSearchParams(window.location.search).get('screensaver') === '1';
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const IS_SCREENSAVER = URL_PARAMS.get('screensaver') === '1';
+const DIM_PARAM = Number(URL_PARAMS.get('dim'));
+if (Number.isFinite(DIM_PARAM) && DIM_PARAM >= 0.2 && DIM_PARAM <= 1) {
+  document.documentElement.style.setProperty('--screensaver-dim', String(DIM_PARAM));
+}
 
 const DEFAULT_PREFS = {
   themeMode: 'auto', // 'auto' | 'paper' | 'oled'
