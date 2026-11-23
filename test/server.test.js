@@ -64,6 +64,17 @@ describe('HTTP server endpoints', () => {
     assert.equal(postData.personalNote, 'God dag!');
   });
 
+  it('ensures every DOM ID referenced in app.js exists in index.html', async () => {
+    const html = await (await fetch(`${baseUrl}/`)).text();
+    const js = await (await fetch(`${baseUrl}/app.js`)).text();
+    const css = await (await fetch(`${baseUrl}/styles.css`)).text();
+
+    const ids = [...js.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map((m) => m[1]);
+    const missing = ids.filter((id) => !html.includes(`id="${id}"`));
+    assert.deepEqual(missing, []);
+    assert.match(css, /\.week-view/);
+  });
+
   it('blocks path traversal attempts', async () => {
     const res = await fetch(`${baseUrl}/../package.json`);
     assert.ok(res.status === 403 || res.status === 404);

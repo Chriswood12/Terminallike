@@ -56,8 +56,8 @@
         </div>
       </header>
 
-      <!-- Main Editorial Grid -->
-      <main class="main-grid">
+      <!-- Main Editorial Grid (Dag-visning) -->
+      <main id="day-view" class="main-grid">
         <!-- Left Column: AI Briefing, Up Next Spotlight, Day Rhythm, Personal Note -->
         <section class="col-left" aria-label="Dagsoverblik">
           <!-- AI Daily Briefing -->
@@ -138,6 +138,24 @@
         </section>
       </main>
 
+      <!-- Ugeoverblik (7-dages visning — Studie & Aftaler) -->
+      <section id="week-view" class="week-view hidden" aria-label="Ugentligt overblik over studie og aftaler">
+        <div class="week-toolbar">
+          <div class="week-summary">
+            <span class="mono-label">UGEOVERBLIK · NÆSTE 7 DAGE</span>
+            <span id="week-totals" class="mono-sub">—</span>
+          </div>
+          <div class="week-filters" role="group" aria-label="Filtrer ugeoverblik">
+            <button type="button" class="filter-btn is-active" data-week-filter="all">Alle</button>
+            <button type="button" class="filter-btn" data-week-filter="studie">Studie</button>
+            <button type="button" class="filter-btn" data-week-filter="privat">Privat</button>
+          </div>
+        </div>
+        <div id="week-grid" class="week-grid">
+          <!-- 7 day columns injected by app.js -->
+        </div>
+      </section>
+
       <!-- Minimal TRMNL Footer Status Bar -->
       <footer class="footer-bar">
         <div class="footer-left mono-sub">
@@ -148,6 +166,8 @@
           <span id="status-protection">OLED-forskydning: Til</span>
         </div>
         <div class="footer-right mono-sub">
+          <span>U Uge</span>
+          <span class="sep">·</span>
           <span>S Indstillinger</span>
           <span class="sep">·</span>
           <span>T Tema</span>
@@ -159,6 +179,9 @@
 
     <!-- Floating Corner Controls (auto-hide when idle) -->
     <nav id="floating-controls" class="floating-controls" aria-label="Skærmkontrol">
+      <button id="btn-view" class="ctrl-btn" type="button" title="Skift mellem Dag og Uge (U)">
+        Uge
+      </button>
       <button id="btn-theme" class="ctrl-btn" type="button" title="Skift tema (T)">
         Tema
       </button>
