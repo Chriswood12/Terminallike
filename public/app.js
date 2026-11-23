@@ -10,7 +10,7 @@ const IS_SCREENSAVER =
   new URLSearchParams(window.location.search).get('screensaver') === '1';
 
 const DEFAULT_PREFS = {
-  themeMode: 'auto', // 'auto' | 'paper' | 'oled'
+  themeMode: 'oled', // 'oled' | 'auto' | 'paper'
   fontMode: 'atkinson', // 'atkinson' | 'lexend' | 'classic'
   viewMode: 'day', // 'day' | 'week'
   weekFilter: 'all', // 'all' | 'studie' | 'privat'
