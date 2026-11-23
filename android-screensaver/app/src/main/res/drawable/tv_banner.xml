@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+
+    <path
+        android:fillColor="#0B0B0B"
+        android:pathData="M0,0h320v180h-320z" />
+
+    <!-- Subtle editorial border -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M18,18 L302,18 L302,162 L18,162 Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#3A3834" />
+
+    <!-- Masthead line -->
+    <path
+        android:pathData="M34,48 L286,48"
+        android:strokeWidth="2"
+        android:strokeColor="#E8E4DC" />
+
+    <!-- Left column summary bars -->
+    <path
+        android:pathData="M34,70 L146,70 M34,86 L132,86 M34,102 L140,102 M34,126 L120,126"
+        android:strokeWidth="4"
+        android:strokeColor="#A8A39A" />
+
+    <!-- Right column calendar bars -->
+    <path
+        android:pathData="M174,70 L286,70 M174,90 L270,90 M174,110 L282,110 M174,130 L252,130"
+        android:strokeWidth="4"
+        android:strokeColor="#E8E4DC" />
+</vector>

@@ -123,6 +123,15 @@ body.is-idle .floating-controls {
   transform: translateY(-6px);
 }
 
+body.is-screensaver {
+  cursor: none;
+}
+
+body.is-screensaver .floating-controls,
+body.is-screensaver .footer-right {
+  display: none;
+}
+
 /* Main Viewport Canvas with Burn-In Pixel Shift */
 .canvas {
   position: relative;

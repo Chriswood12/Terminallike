@@ -1,0 +1,40 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.terminallike.screensaver'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.terminallike.screensaver"
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName "1.0.0"
+
+        def defaultUrl = (project.findProperty("TERMINALLIKE_URL") ?: "https://terminallike.vercel.app").toString()
+        buildConfigField "String", "DEFAULT_APP_URL", "\"${defaultUrl.replace("\"", "\\\"")}\""
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Signed with debug key by default for easy sideloading; override via signingConfigs if publishing.
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // Pure Android SDK — zero external runtime dependencies for minimal APK size.
+}

@@ -1,0 +1,47 @@
+name: Build Android TV Screensaver APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-screensaver/**'
+      - '.github/workflows/build-android-apk.yml'
+  workflow_dispatch:
+    inputs:
+      vercel_url:
+        description: 'Default Vercel app URL baked into the APK (can still be changed in TV settings)'
+        required: false
+        default: 'https://terminallike.vercel.app'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.8'
+
+      - name: Build release APK
+        working-directory: android-screensaver
+        run: |
+          URL="${{ github.event.inputs.vercel_url || 'https://terminallike.vercel.app' }}"
+          gradle assembleRelease --no-daemon -PTERMINALLIKE_URL="$URL"
+          cp app/build/outputs/apk/release/app-release.apk terminallike-screensaver.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terminallike-screensaver-apk
+          path: android-screensaver/terminallike-screensaver.apk
+          retention-days: 90

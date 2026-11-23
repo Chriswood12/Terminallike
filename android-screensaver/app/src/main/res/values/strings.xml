@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Terminallike Screensaver</string>
+    <string name="preview_title">Terminallike Preview</string>
+    <string name="settings_subtitle">Android TV &amp; Projectivy Screensaver</string>
+    <string name="label_url">Vercel App URL</string>
+    <string name="hint_url">https://your-app.vercel.app</string>
+    <string name="label_screen_bright">Keep screen at full brightness (disable Android TV dim)</string>
+    <string name="btn_save">Save URL</string>
+    <string name="btn_preview">Test Screensaver</string>
+    <string name="btn_system_settings">Open TV Screensaver Settings</string>
+    <string name="saved_toast">Saved! Screensaver will load: %1$s</string>
+    <string name="invalid_url_toast">Please enter a valid http:// or https:// URL</string>
+    <string name="adb_hint_title">Google TV / Projectivy Setup</string>
+    <string name="adb_hint_body">1. In Projectivy: Settings → Appearance → Launcher Idle Mode → Prevent system screensaver = OFF.\n2. If Google TV hides custom screensavers, run once via ADB:\nadb shell settings put secure screensaver_components com.terminallike.screensaver/.TerminallikeDreamService</string>
+</resources>

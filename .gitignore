@@ -5,3 +5,7 @@ node_modules/
 .vercel
 .DS_Store
 *.log
+android-screensaver/.gradle/
+android-screensaver/build/
+android-screensaver/app/build/
+android-screensaver/local.properties

@@ -95,11 +95,51 @@ ICS_URLS=Personal|https://calendar.google.com/calendar/ical/abc123/private-xyz/b
 3. Bookmark it as your homepage and enable **Fullscreen Mode** in TV Bro settings.
 4. After 5 seconds of inactivity, the cursor and corner controls automatically fade away.
 
-### Option 2: True Android TV Screensaver (Auto-launches when idle)
-1. Install **WebView Screensaver** or **Fully Kiosk Browser** (or sideload **Dashboard Screensaver** for Android TV).
-2. Set the screensaver URL to your deployed Vercel URL.
-3. On Google TV, go to **Settings → System → Ambient Mode** (or use `adb shell settings put secure screensaver_components ...` if using a custom DreamService screensaver) to set it as your active screensaver.
-4. In Terminallike's **Settings Drawer (`S`)**, keep **OLED Burn-In Pixel Shift** enabled and set **Theme Mode** to **Auto at Sunset** (or **OLED-Safe Ink** for OLED TVs).
+### Option 2: True Android TV Screensaver with Projectivy Launcher (Recommended)
+
+This repository includes a lightweight, zero-dependency Android TV **DreamService** screensaver app in [`android-screensaver/`](android-screensaver/) that loads your live Vercel URL fullscreen in an OLED-safe WebView (keeping the live clock, auto-at-sunset theme, and OLED pixel shift working — and waking back up to Projectivy on any remote press).
+
+#### 1. Get the APK
+- **From GitHub Actions (easiest):** Go to your repository's **Actions → Build Android TV Screensaver APK → Run workflow**, optionally enter your Vercel URL, and download `terminallike-screensaver.apk` from the workflow artifacts.
+- **Or build locally** (requires JDK 17/21, Gradle 8.8+, Android SDK 35):
+  ```bash
+  cd android-screensaver
+  gradle assembleRelease -PTERMINALLIKE_URL=https://your-app.vercel.app
+  # Output: android-screensaver/app/build/outputs/apk/release/app-release.apk
+  ```
+
+#### 2. Install & Configure on Google TV / Android TV
+1. Enable **Developer options** and **USB / Wireless debugging** on your TV, then install via ADB (or sideload with **Send Files to TV** / **Downloader**):
+   ```bash
+   adb connect <TV_IP>:5555
+   adb install -r terminallike-screensaver.apk
+   ```
+2. Set your Vercel URL — either open **Terminallike Screensaver** from Projectivy and type it with the remote, **or** set it in one command via ADB:
+   ```bash
+   adb shell am start -n com.terminallike.screensaver/.SettingsActivity --es url https://your-app.vercel.app
+   ```
+   Click **Test Screensaver** inside the app to verify it renders cleanly on your TV.
+
+#### 3. Activate as System Screensaver (Google TV / Android TV)
+Google TV hides third-party screensavers in the standard UI, so enable it once via ADB:
+```bash
+adb shell settings put secure screensaver_enabled 1
+adb shell settings put secure screensaver_components com.terminallike.screensaver/.TerminallikeDreamService
+```
+*(Optional: set the idle timeout in milliseconds, e.g. 5 minutes = `300000`: `adb shell settings put system screen_off_timeout 300000`.)*
+
+To test the real system screensaver immediately:
+```bash
+adb shell am start -n com.android.systemui/.Somnambulator
+```
+
+#### 4. Projectivy Launcher Settings
+Make sure Projectivy does not block the Android TV system screensaver:
+1. Open **Projectivy Settings → Appearance → Launcher Idle Mode**.
+2. Set **Prevent system screensaver** to **OFF** (some Projectivy theme presets turn this ON by default).
+3. *(Optional)* Under **Projectivy Settings → Power** or button remapping (e.g. double-press Back), you can bind a remote shortcut to **Start screensaver** to launch Terminallike on demand.
+
+*(To revert to the default Google TV Ambient Mode screensaver later: `adb shell settings put secure screensaver_components com.google.android.apps.tv.dreamx/.service.Backdrop`.)*
 
 ---
 

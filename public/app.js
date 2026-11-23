@@ -6,6 +6,8 @@ const STORAGE_KEY = 'terminallike_prefs_v1';
 const LOCALE = 'da-DK';
 const IDLE_MS = 5000;
 const PIXEL_SHIFT_INTERVAL_MS = 2 * 60 * 1000;
+const IS_SCREENSAVER =
+  new URLSearchParams(window.location.search).get('screensaver') === '1';
 
 const DEFAULT_PREFS = {
   themeMode: 'auto', // 'auto' | 'paper' | 'oled'
@@ -271,6 +273,10 @@ function startPixelShift() {
 }
 
 function resetIdleTimer() {
+  if (IS_SCREENSAVER) {
+    document.body.classList.add('is-screensaver', 'is-idle');
+    return;
+  }
   document.body.classList.remove('is-idle');
   if (idleTimer) clearTimeout(idleTimer);
   if (!el.drawer.classList.contains('hidden')) return;
