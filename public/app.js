@@ -627,7 +627,7 @@ function openSettings() {
   el.cityResults.classList.add('hidden');
   el.cityResults.innerHTML = '';
 
-  const currentCity = prefs.city || latestBriefing?.location?.name || 'København, DK';
+  const currentCity = prefs.city || latestBriefing?.location?.name || 'Aarhus, DK';
   const currentTz = prefs.tz || latestBriefing?.timezone || 'Europe/Copenhagen';
   el.citySelected.textContent = `Valgt: ${currentCity}${currentTz ? ` (${currentTz})` : ''}`;
 
