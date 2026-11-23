@@ -49,9 +49,6 @@ const el = {
   dayView: document.getElementById('day-view'),
   weekView: document.getElementById('week-view'),
   weekTotals: document.getElementById('week-totals'),
-  weekAiMeta: document.getElementById('week-ai-meta'),
-  weekAiHeadline: document.getElementById('week-ai-headline'),
-  weekAiHighlights: document.getElementById('week-ai-highlights'),
   weekGrid: document.getElementById('week-grid'),
   greetingKicker: document.getElementById('greeting-kicker'),
   btnMastheadView: document.getElementById('btn-masthead-view'),
@@ -622,28 +619,6 @@ function renderWeekOverview(week, tz) {
     el.weekTotals.textContent = 'Ingen ugedata';
     el.weekGrid.innerHTML = '';
     return;
-  }
-
-  // Render AI Weekly Study, Homework & Planning Summary
-  const ws = week.summary;
-  if (ws) {
-    const providerLabel =
-      ws.provider && ws.provider !== 'local'
-        ? `AI · ${ws.provider.toUpperCase()}`
-        : 'SMART OVERBLIK';
-    el.weekAiMeta.textContent = `${providerLabel}${ws.cached ? ' · GEMT' : ''}`;
-    el.weekAiMeta.title = ws.fallbackReason ? `Fallback: ${ws.fallbackReason}` : '';
-    el.weekAiHeadline.textContent = ws.headline || 'Ingen ugeopsummering tilgængelig.';
-
-    el.weekAiHighlights.innerHTML = '';
-    const items = Array.isArray(ws.highlights) && ws.highlights.length > 0
-      ? ws.highlights
-      : ['Ingen særlige punkter at fremhæve i denne uge.'];
-    for (const item of items) {
-      const li = document.createElement('li');
-      li.textContent = item;
-      el.weekAiHighlights.appendChild(li);
-    }
   }
 
   const filter = prefs.weekFilter || 'all';
