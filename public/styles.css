@@ -510,6 +510,77 @@ html[data-theme='oled'] body.is-screensaver .canvas {
   padding: 0 2px;
 }
 
+/* Påmindelser / To-Do List */
+.todo-block {
+  padding-top: clamp(8px, 1vh, 14px);
+  border-top: 1px solid var(--rule-subtle);
+}
+
+.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(5px, 0.7vh, 10px);
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(4px, 0.55vh, 8px) 8px clamp(4px, 0.55vh, 8px) 10px;
+  border-left: 3px solid var(--evt-accent);
+  border-radius: 0 4px 4px 0;
+  background: var(--evt-tint);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.todo-item.is-done {
+  opacity: 0.45;
+}
+
+.todo-item.is-done .todo-title {
+  text-decoration: line-through;
+}
+
+.todo-check {
+  width: clamp(14px, 1.05vw, 19px);
+  height: clamp(14px, 1.05vw, 19px);
+  border-radius: 50%;
+  border: 1.5px solid var(--evt-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--bg);
+  flex-shrink: 0;
+}
+
+.todo-item.is-done .todo-check {
+  background: var(--evt-accent);
+}
+
+.todo-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: clamp(14px, 1.1vw, 20px);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.todo-due {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 0.78vw, 14px);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
 /* Optional Personal Note */
 .note-block {
   display: flex;

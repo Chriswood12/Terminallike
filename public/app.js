@@ -68,6 +68,9 @@ const el = {
   upNextMeta: document.getElementById('up-next-meta'),
   rhythmStats: document.getElementById('rhythm-stats'),
   rhythmTrack: document.getElementById('rhythm-track'),
+  todoBlock: document.getElementById('todo-block'),
+  todoMeta: document.getElementById('todo-meta'),
+  todoList: document.getElementById('todo-list'),
   noteBlock: document.getElementById('personal-note-block'),
   noteText: document.getElementById('personal-note-text'),
   todayCount: document.getElementById('today-count'),
@@ -98,6 +101,8 @@ const el = {
   inputIcsUrls: document.getElementById('input-ics-urls'),
   selectAiProvider: document.getElementById('select-ai-provider'),
   inputAiKey: document.getElementById('input-ai-key'),
+  inputQuickTodo: document.getElementById('input-quick-todo'),
+  btnAddTodo: document.getElementById('btn-add-todo'),
   inputNote: document.getElementById('input-note'),
   toggleAutoRotate: document.getElementById('toggle-auto-rotate'),
   togglePixelShift: document.getElementById('toggle-pixel-shift'),
@@ -368,6 +373,7 @@ function renderBriefing(data) {
 
   renderUpNext(data.upNext, tz);
   renderDayRhythm(data.dayRhythm);
+  renderTodos(data.todos);
 
   setupRotatingNotes(
     Array.isArray(data.personalNotes) && data.personalNotes.length > 0
@@ -494,6 +500,106 @@ function setupRotatingNotes(notes) {
         el.noteText.classList.remove('is-fading');
       }, 550);
     }, 30000);
+  }
+}
+
+function todoToneClass(listName = '') {
+  const lower = String(listName).toLowerCase();
+  if (lower.includes('studie') || lower.includes('via') || lower.includes('skole')) return 'tone-1';
+  if (lower.includes('indkøb') || lower.includes('mad') || lower.includes('hjem')) return 'tone-0';
+  if (lower.includes('vigtig') || lower.includes('deadline')) return 'tone-2';
+  return 'tone-privat';
+}
+
+function renderTodos(todosData) {
+  const items = Array.isArray(todosData?.items) ? todosData.items : [];
+  if (items.length === 0) {
+    el.todoBlock.classList.add('hidden');
+    el.todoList.innerHTML = '';
+    return;
+  }
+
+  el.todoBlock.classList.remove('hidden');
+  const openCount = items.filter((i) => !i.completed).length;
+  const sourceLabel =
+    todosData.source === 'apple-reminders'
+      ? 'Apple Påmindelser'
+      : todosData.source === 'demo'
+        ? 'Demo'
+        : 'To-do';
+  el.todoMeta.textContent = `${openCount} åbne · ${sourceLabel}`;
+
+  el.todoList.innerHTML = '';
+  for (const item of items.slice(0, 5)) {
+    const li = document.createElement('li');
+    li.className = `todo-item ${todoToneClass(item.list)}${item.completed ? ' is-done' : ''}`;
+    li.title = 'Klik for at markere som færdig';
+    li.addEventListener('click', () => toggleTodoItem(item));
+
+    const check = document.createElement('span');
+    check.className = 'todo-check';
+    check.textContent = item.completed ? '✓' : '';
+
+    const title = document.createElement('span');
+    title.className = 'todo-title';
+    title.textContent = item.title;
+
+    li.appendChild(check);
+    li.appendChild(title);
+
+    if (item.dueDate || (item.list && item.list !== 'Påmindelser')) {
+      const meta = document.createElement('span');
+      meta.className = 'todo-due';
+      meta.textContent = item.dueDate || item.list;
+      li.appendChild(meta);
+    }
+
+    el.todoList.appendChild(li);
+  }
+}
+
+async function toggleTodoItem(item) {
+  item.completed = !item.completed;
+  if (latestBriefing?.todos) {
+    renderTodos(latestBriefing.todos);
+  }
+  try {
+    const res = await fetch('/api/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'toggle', id: item.id }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      if (latestBriefing) {
+        latestBriefing.todos = updated;
+        renderTodos(updated);
+      }
+    }
+  } catch {
+    // Keep optimistic UI state
+  }
+}
+
+async function addQuickTodo() {
+  const title = el.inputQuickTodo.value.trim();
+  if (!title) return;
+  el.inputQuickTodo.value = '';
+  try {
+    const res = await fetch('/api/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add', title }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      if (latestBriefing) {
+        latestBriefing.todos = updated;
+        renderTodos(updated);
+      }
+    }
+  } catch {
+    // Ignore network error
   }
 }
 
@@ -939,6 +1045,13 @@ el.btnSettings.addEventListener('click', openSettings);
 el.btnCloseSettings.addEventListener('click', closeSettings);
 el.backdrop.addEventListener('click', closeSettings);
 el.btnCitySearch.addEventListener('click', performCityLookup);
+el.btnAddTodo.addEventListener('click', addQuickTodo);
+el.inputQuickTodo.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addQuickTodo();
+  }
+});
 
 document.querySelectorAll('[data-week-filter]').forEach((btn) => {
   btn.addEventListener('click', () => {

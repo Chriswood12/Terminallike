@@ -114,6 +114,15 @@
             </div>
           </article>
 
+          <!-- Påmindelser / To-Do (Apple Påmindelser & hurtige opgaver) -->
+          <article id="todo-block" class="section-block todo-block hidden" aria-label="Påmindelser og to-do">
+            <div class="section-header">
+              <span class="mono-label">PÅMINDELSER · TO-DO</span>
+              <span id="todo-meta" class="mono-sub">—</span>
+            </div>
+            <ul id="todo-list" class="todo-list"></ul>
+          </article>
+
           <!-- Optional Personal Note -->
           <aside id="personal-note-block" class="note-block hidden" aria-label="Personlig hilsen">
             <span class="mono-label note-kicker">HILSEN</span>
@@ -323,6 +332,23 @@
               placeholder="Indsæt API-nøgle…"
               autocomplete="off"
             />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="input-quick-todo" class="field-label">Tilføj hurtig påmindelse / to-do</label>
+          <div class="city-search-row">
+            <input
+              id="input-quick-todo"
+              class="field-input"
+              type="text"
+              placeholder="f.eks. Læs kap. 5 eller Køb kaffe…"
+              autocomplete="off"
+            />
+            <button id="btn-add-todo" class="ctrl-btn" type="button">Tilføj</button>
+          </div>
+          <div class="field-hint mono-sub">
+            Synkroniserer også automatisk med Apple Påmindelser via Genveje → /api/todos
           </div>
         </div>
 
