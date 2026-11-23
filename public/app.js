@@ -628,6 +628,7 @@ function renderWeekOverview(week, tz) {
         ? `AI · ${ws.provider.toUpperCase()}`
         : 'SMART OVERBLIK';
     el.weekAiMeta.textContent = `${providerLabel}${ws.cached ? ' · GEMT' : ''}`;
+    el.weekAiMeta.title = ws.fallbackReason ? `Fallback: ${ws.fallbackReason}` : '';
     el.weekAiHeadline.textContent = ws.headline || 'Ingen ugeopsummering tilgængelig.';
 
     el.weekAiHighlights.innerHTML = '';
@@ -722,6 +723,22 @@ function renderWeekOverview(week, tz) {
           locEl.className = 'week-event-loc';
           locEl.textContent = evt.location;
           li.appendChild(locEl);
+        }
+
+        if (isStudie && evt.description) {
+          const cleanNote = String(evt.description)
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/&amp;/gi, '&')
+            .replace(/https?:\/\/\S+/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+          if (cleanNote) {
+            const descEl = document.createElement('div');
+            descEl.className = 'week-event-desc';
+            descEl.textContent = cleanNote;
+            li.appendChild(descEl);
+          }
         }
 
         list.appendChild(li);
