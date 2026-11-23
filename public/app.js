@@ -43,8 +43,12 @@ const el = {
   dayView: document.getElementById('day-view'),
   weekView: document.getElementById('week-view'),
   weekTotals: document.getElementById('week-totals'),
+  weekAiMeta: document.getElementById('week-ai-meta'),
+  weekAiHeadline: document.getElementById('week-ai-headline'),
+  weekAiHighlights: document.getElementById('week-ai-highlights'),
   weekGrid: document.getElementById('week-grid'),
   greetingKicker: document.getElementById('greeting-kicker'),
+  btnMastheadView: document.getElementById('btn-masthead-view'),
   demoBadge: document.getElementById('demo-badge'),
   warningBadge: document.getElementById('warning-badge'),
   dateHeading: document.getElementById('date-heading'),
@@ -562,11 +566,26 @@ function renderTomorrowPreview(events, weather, tz) {
   }
 }
 
+function updateMastheadViewPill() {
+  const isWeek = prefs.viewMode === 'week';
+  if (isWeek) {
+    el.btnMastheadView.textContent = '← TILBAGE TIL I DAG';
+    return;
+  }
+  const t = latestBriefing?.week?.totals;
+  if (t && t.totalEvents > 0) {
+    el.btnMastheadView.textContent = `UGE · ${t.studieEvents} STUDIE · ${t.privatEvents} PRIVAT →`;
+  } else {
+    el.btnMastheadView.textContent = 'UGEOVERBLIK →';
+  }
+}
+
 function applyViewMode() {
   const isWeek = prefs.viewMode === 'week';
   el.dayView.classList.toggle('hidden', isWeek);
   el.weekView.classList.toggle('hidden', !isWeek);
   el.btnView.textContent = isWeek ? 'Dag' : 'Uge';
+  updateMastheadViewPill();
 }
 
 function toggleViewMode() {
@@ -587,10 +606,33 @@ function startAutoRotate() {
 }
 
 function renderWeekOverview(week, tz) {
+  updateMastheadViewPill();
+
   if (!week || !Array.isArray(week.days)) {
     el.weekTotals.textContent = 'Ingen ugedata';
     el.weekGrid.innerHTML = '';
     return;
+  }
+
+  // Render AI Weekly Study, Homework & Planning Summary
+  const ws = week.summary;
+  if (ws) {
+    const providerLabel =
+      ws.provider && ws.provider !== 'local'
+        ? `AI · ${ws.provider.toUpperCase()}`
+        : 'SMART OVERBLIK';
+    el.weekAiMeta.textContent = `${providerLabel}${ws.cached ? ' · GEMT' : ''}`;
+    el.weekAiHeadline.textContent = ws.headline || 'Ingen ugeopsummering tilgængelig.';
+
+    el.weekAiHighlights.innerHTML = '';
+    const items = Array.isArray(ws.highlights) && ws.highlights.length > 0
+      ? ws.highlights
+      : ['Ingen særlige punkter at fremhæve i denne uge.'];
+    for (const item of items) {
+      const li = document.createElement('li');
+      li.textContent = item;
+      el.weekAiHighlights.appendChild(li);
+    }
   }
 
   const filter = prefs.weekFilter || 'all';
@@ -838,6 +880,7 @@ function escapeHtml(str) {
 }
 
 el.btnView.addEventListener('click', toggleViewMode);
+el.btnMastheadView.addEventListener('click', toggleViewMode);
 el.btnTheme.addEventListener('click', cycleThemeMode);
 el.btnRefresh.addEventListener('click', fetchBriefing);
 el.btnSettings.addEventListener('click', openSettings);

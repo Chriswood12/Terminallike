@@ -98,6 +98,8 @@ describe('buildBriefing', () => {
     assert.equal(briefing.week.days.length, 7);
     assert.ok(briefing.week.totals.studieEvents > 0);
     assert.ok(briefing.week.totals.privatEvents > 0);
+    assert.ok(briefing.week.summary.headline.length > 10);
+    assert.ok(briefing.week.summary.highlights.length > 0);
     assert.ok(briefing.summary.text.length > 20);
     assert.equal(briefing.weather.sunset, '2026-11-23T16:54');
   });

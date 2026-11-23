@@ -680,6 +680,71 @@ body.is-idle .floating-controls {
   color: var(--bg);
 }
 
+.view-pill {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 0.74vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.view-pill:hover,
+.view-pill:focus-visible {
+  background: var(--ink);
+  color: var(--bg);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.week-ai-card {
+  display: grid;
+  grid-template-columns: 1.05fr 1.25fr;
+  gap: clamp(16px, 2vw, 36px);
+  align-items: start;
+  padding: clamp(12px, 1.5vh, 22px) clamp(16px, 1.6vw, 28px);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 6px;
+  background: var(--surface-elevated);
+}
+
+.week-ai-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.week-ai-headline {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(15px, 1.25vw, 23px);
+  line-height: var(--reading-line-height);
+  letter-spacing: var(--reading-tracking);
+  word-spacing: var(--reading-word-spacing);
+  color: var(--ink);
+}
+
+.week-ai-highlights {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 0.55vh, 8px);
+  font-size: clamp(13px, 1.05vw, 19px);
+  line-height: 1.45;
+  letter-spacing: var(--reading-tracking);
+  color: var(--ink-soft);
+}
+
 .week-grid {
   flex: 1 1 auto;
   min-height: 0;
