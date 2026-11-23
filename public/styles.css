@@ -38,21 +38,21 @@
   --past-opacity: 0.44;
   --focus-ring: #141413;
 
-  /* Very muted Nordic subject & entry tones (Paper light) */
-  --tone-0: #6d7f71;
-  --tone-0-tint: rgba(109, 127, 113, 0.08);
-  --tone-1: #65788a;
-  --tone-1-tint: rgba(101, 120, 138, 0.08);
-  --tone-2: #9c7361;
-  --tone-2-tint: rgba(156, 115, 97, 0.08);
-  --tone-3: #948158;
-  --tone-3-tint: rgba(148, 129, 88, 0.08);
-  --tone-4: #8e6f74;
-  --tone-4-tint: rgba(142, 111, 116, 0.08);
-  --tone-5: #5f7c7c;
-  --tone-5-tint: rgba(95, 124, 124, 0.08);
-  --tone-privat: #8a8173;
-  --tone-privat-tint: rgba(138, 129, 115, 0.06);
+  /* Distinct yet muted Nordic subject & entry tones (Paper light) */
+  --tone-0: #3f7a5a;
+  --tone-0-tint: rgba(63, 122, 90, 0.14);
+  --tone-1: #3b6998;
+  --tone-1-tint: rgba(59, 105, 152, 0.14);
+  --tone-2: #b55d42;
+  --tone-2-tint: rgba(181, 93, 66, 0.14);
+  --tone-3: #a8842a;
+  --tone-3-tint: rgba(168, 132, 42, 0.15);
+  --tone-4: #9e536b;
+  --tone-4-tint: rgba(158, 83, 107, 0.14);
+  --tone-5: #2f7d82;
+  --tone-5-tint: rgba(47, 125, 130, 0.14);
+  --tone-privat: #7d7365;
+  --tone-privat-tint: rgba(125, 115, 101, 0.1);
 
   --evt-accent: var(--tone-privat);
   --evt-tint: var(--tone-privat-tint);
@@ -79,21 +79,21 @@ html[data-theme='oled'] {
   --past-opacity: 0.36;
   --focus-ring: #dfdcd4;
 
-  /* Very muted low-glare Nordic tones (OLED dark — zero neon) */
-  --tone-0: #768b7a;
-  --tone-0-tint: rgba(118, 139, 122, 0.11);
-  --tone-1: #728799;
-  --tone-1-tint: rgba(114, 135, 153, 0.11);
-  --tone-2: #a47e6c;
-  --tone-2-tint: rgba(164, 126, 108, 0.11);
-  --tone-3: #9e8c64;
-  --tone-3-tint: rgba(158, 140, 100, 0.11);
-  --tone-4: #997b80;
-  --tone-4-tint: rgba(153, 123, 128, 0.11);
-  --tone-5: #6d8c8c;
-  --tone-5-tint: rgba(109, 140, 140, 0.11);
-  --tone-privat: #8e8679;
-  --tone-privat-tint: rgba(142, 134, 121, 0.08);
+  /* Distinct yet muted low-glare Nordic tones (OLED dark — zero neon) */
+  --tone-0: #5ea67e;
+  --tone-0-tint: rgba(94, 166, 126, 0.17);
+  --tone-1: #6193c4;
+  --tone-1-tint: rgba(97, 147, 196, 0.17);
+  --tone-2: #cf7a5f;
+  --tone-2-tint: rgba(207, 122, 95, 0.17);
+  --tone-3: #c9a54c;
+  --tone-3-tint: rgba(201, 165, 76, 0.17);
+  --tone-4: #bf768d;
+  --tone-4-tint: rgba(191, 118, 141, 0.17);
+  --tone-5: #53a6ab;
+  --tone-5-tint: rgba(83, 166, 171, 0.17);
+  --tone-privat: #998f80;
+  --tone-privat-tint: rgba(153, 143, 128, 0.12);
 }
 
 .tone-0 { --evt-accent: var(--tone-0); --evt-tint: var(--tone-0-tint); }
@@ -905,7 +905,7 @@ html[data-theme='oled'] body.is-screensaver .canvas {
 }
 
 .week-event.is-studie {
-  border-left: 3.5px solid var(--evt-accent);
+  border-left: 4px solid var(--evt-accent);
 }
 
 .week-event-top {
@@ -924,8 +924,8 @@ html[data-theme='oled'] body.is-screensaver .canvas {
 }
 
 .week-cat-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
