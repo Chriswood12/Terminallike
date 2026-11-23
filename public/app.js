@@ -10,6 +10,9 @@ const PIXEL_SHIFT_INTERVAL_MS = 2 * 60 * 1000;
 const DEFAULT_PREFS = {
   themeMode: 'auto', // 'auto' | 'paper' | 'oled'
   fontMode: 'atkinson', // 'atkinson' | 'lexend' | 'classic'
+  viewMode: 'day', // 'day' | 'week'
+  weekFilter: 'all', // 'all' | 'studie' | 'privat'
+  autoRotate: false,
   pixelShift: true,
   refreshMinutes: 10,
   name: '',
@@ -28,6 +31,7 @@ const DEFAULT_PREFS = {
 let prefs = loadPrefs();
 let latestBriefing = null;
 let refreshTimer = null;
+let rotateTimer = null;
 let idleTimer = null;
 let pixelShiftTimer = null;
 let pixelShiftStep = 0;
@@ -36,6 +40,10 @@ let pendingCitySelection = null;
 
 const el = {
   canvas: document.getElementById('canvas'),
+  dayView: document.getElementById('day-view'),
+  weekView: document.getElementById('week-view'),
+  weekTotals: document.getElementById('week-totals'),
+  weekGrid: document.getElementById('week-grid'),
   greetingKicker: document.getElementById('greeting-kicker'),
   demoBadge: document.getElementById('demo-badge'),
   warningBadge: document.getElementById('warning-badge'),
@@ -63,6 +71,7 @@ const el = {
   statusSync: document.getElementById('status-sync'),
   statusTheme: document.getElementById('status-theme'),
   statusProtection: document.getElementById('status-protection'),
+  btnView: document.getElementById('btn-view'),
   btnTheme: document.getElementById('btn-theme'),
   btnRefresh: document.getElementById('btn-refresh'),
   btnSettings: document.getElementById('btn-settings'),
@@ -83,6 +92,7 @@ const el = {
   selectAiProvider: document.getElementById('select-ai-provider'),
   inputAiKey: document.getElementById('input-ai-key'),
   inputNote: document.getElementById('input-note'),
+  toggleAutoRotate: document.getElementById('toggle-auto-rotate'),
   togglePixelShift: document.getElementById('toggle-pixel-shift'),
   toggleDemo: document.getElementById('toggle-demo'),
   wakelockStatus: document.getElementById('wakelock-status'),
@@ -357,6 +367,7 @@ function renderBriefing(data) {
 
   renderTodaySchedule(data.today?.events || [], tz);
   renderTomorrowPreview(data.tomorrow?.events || [], data.weather, tz);
+  renderWeekOverview(data.week, tz);
 
   el.statusSync.textContent = `Opdateret ${formatTime(data.generatedAt, tz)}`;
 
@@ -551,6 +562,130 @@ function renderTomorrowPreview(events, weather, tz) {
   }
 }
 
+function applyViewMode() {
+  const isWeek = prefs.viewMode === 'week';
+  el.dayView.classList.toggle('hidden', isWeek);
+  el.weekView.classList.toggle('hidden', !isWeek);
+  el.btnView.textContent = isWeek ? 'Dag' : 'Uge';
+}
+
+function toggleViewMode() {
+  prefs.viewMode = prefs.viewMode === 'week' ? 'day' : 'week';
+  savePrefs();
+  applyViewMode();
+}
+
+function startAutoRotate() {
+  if (rotateTimer) clearInterval(rotateTimer);
+  rotateTimer = null;
+  if (!prefs.autoRotate) return;
+  rotateTimer = setInterval(() => {
+    if (!el.drawer.classList.contains('hidden')) return;
+    prefs.viewMode = prefs.viewMode === 'week' ? 'day' : 'week';
+    applyViewMode();
+  }, 45000);
+}
+
+function renderWeekOverview(week, tz) {
+  if (!week || !Array.isArray(week.days)) {
+    el.weekTotals.textContent = 'Ingen ugedata';
+    el.weekGrid.innerHTML = '';
+    return;
+  }
+
+  const filter = prefs.weekFilter || 'all';
+  document.querySelectorAll('[data-week-filter]').forEach((btn) => {
+    btn.classList.toggle('is-active', btn.dataset.weekFilter === filter);
+  });
+
+  const t = week.totals || {};
+  const parts = [
+    `${t.totalEvents || 0} aftaler`,
+    `${t.studieEvents || 0} Studie`,
+    `${t.privatEvents || 0} Privat`,
+  ];
+  if (t.busiestDay) parts.push(`Travleste dag: ${t.busiestDay}`);
+  el.weekTotals.textContent = parts.join(' · ');
+
+  el.weekGrid.innerHTML = '';
+  for (const day of week.days) {
+    const col = document.createElement('article');
+    col.className = 'week-day';
+    if (day.isToday) col.classList.add('is-today');
+
+    const head = document.createElement('div');
+    head.className = 'week-day-head';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'week-day-name';
+    nameSpan.textContent = day.isToday ? `I DAG · ${day.weekdayShort}` : day.weekdayShort;
+
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'week-day-date';
+    dateSpan.textContent = day.dateShort;
+
+    head.appendChild(nameSpan);
+    head.appendChild(dateSpan);
+
+    const list = document.createElement('ol');
+    list.className = 'week-day-events';
+
+    const filteredEvents = (day.events || []).filter((evt) => {
+      if (filter === 'all') return true;
+      return (evt.category || 'privat') === filter;
+    });
+
+    if (filteredEvents.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'week-empty';
+      empty.textContent = filter === 'studie' ? 'Ingen undervisning' : 'Fri dag';
+      list.appendChild(empty);
+    } else {
+      for (const evt of filteredEvents) {
+        const isStudie = (evt.category || 'privat') === 'studie';
+        const li = document.createElement('li');
+        li.className = `week-event ${isStudie ? 'is-studie' : 'is-privat'}`;
+
+        const top = document.createElement('div');
+        top.className = 'week-event-top';
+
+        const timeEl = document.createElement('span');
+        timeEl.className = 'week-event-time';
+        timeEl.textContent = evt.allDay
+          ? 'Hele dagen'
+          : `${formatTime(evt.start, tz)}–${formatTime(evt.end, tz)}`;
+
+        const pill = document.createElement('span');
+        pill.className = `week-pill ${isStudie ? 'week-pill-studie' : 'week-pill-privat'}`;
+        pill.textContent = evt.calendar || (isStudie ? 'Studie' : 'Privat');
+
+        top.appendChild(timeEl);
+        top.appendChild(pill);
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'week-event-title';
+        titleEl.textContent = evt.title;
+
+        li.appendChild(top);
+        li.appendChild(titleEl);
+
+        if (evt.location) {
+          const locEl = document.createElement('div');
+          locEl.className = 'week-event-loc';
+          locEl.textContent = evt.location;
+          li.appendChild(locEl);
+        }
+
+        list.appendChild(li);
+      }
+    }
+
+    col.appendChild(head);
+    col.appendChild(list);
+    el.weekGrid.appendChild(col);
+  }
+}
+
 function buildRequestOptions() {
   const payload = {};
   if (prefs.name) payload.name = prefs.name;
@@ -702,12 +837,23 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+el.btnView.addEventListener('click', toggleViewMode);
 el.btnTheme.addEventListener('click', cycleThemeMode);
 el.btnRefresh.addEventListener('click', fetchBriefing);
 el.btnSettings.addEventListener('click', openSettings);
 el.btnCloseSettings.addEventListener('click', closeSettings);
 el.backdrop.addEventListener('click', closeSettings);
 el.btnCitySearch.addEventListener('click', performCityLookup);
+
+document.querySelectorAll('[data-week-filter]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    prefs.weekFilter = btn.dataset.weekFilter || 'all';
+    savePrefs();
+    if (latestBriefing) {
+      renderWeekOverview(latestBriefing.week, latestBriefing.timezone);
+    }
+  });
+});
 
 el.inputCitySearch.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
@@ -727,6 +873,7 @@ el.form.addEventListener('submit', (e) => {
   prefs.aiProvider = el.selectAiProvider.value || 'auto';
   prefs.aiApiKey = el.inputAiKey.value.trim();
   prefs.note = el.inputNote.value.trim();
+  prefs.autoRotate = el.toggleAutoRotate.checked;
   prefs.pixelShift = el.togglePixelShift.checked;
   prefs.demo = el.toggleDemo.checked;
 
@@ -739,6 +886,8 @@ el.form.addEventListener('submit', (e) => {
 
   savePrefs();
   applyTheme();
+  applyViewMode();
+  startAutoRotate();
   startPixelShift();
   scheduleRefresh();
   closeSettings();
@@ -750,6 +899,8 @@ el.btnResetSettings.addEventListener('click', () => {
   pendingCitySelection = null;
   savePrefs();
   applyTheme();
+  applyViewMode();
+  startAutoRotate();
   startPixelShift();
   scheduleRefresh();
   closeSettings();
@@ -769,7 +920,10 @@ document.addEventListener('keydown', (e) => {
 
   if (isTyping) return;
 
-  if (e.key === 's' || e.key === 'S') {
+  if (e.key === 'u' || e.key === 'U') {
+    e.preventDefault();
+    toggleViewMode();
+  } else if (e.key === 's' || e.key === 'S') {
     e.preventDefault();
     if (el.drawer.classList.contains('hidden')) openSettings();
     else closeSettings();
@@ -787,8 +941,10 @@ document.addEventListener('keydown', (e) => {
 });
 
 applyTheme();
+applyViewMode();
 updateClock();
 setInterval(updateClock, 15000);
+startAutoRotate();
 startPixelShift();
 resetIdleTimer();
 acquireWakeLock();

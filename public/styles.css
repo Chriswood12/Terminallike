@@ -935,4 +935,9 @@ body.is-idle .floating-controls {
     padding-top: 20px;
     border-top: 1px solid var(--rule-subtle);
   }
+
+  .week-grid {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
 }

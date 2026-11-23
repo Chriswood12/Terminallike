@@ -95,6 +95,9 @@ describe('buildBriefing', () => {
     assert.equal(briefing.personalNote, 'Love you!');
     assert.ok(briefing.today.events.length > 0);
     assert.ok(briefing.tomorrow.events.length > 0);
+    assert.equal(briefing.week.days.length, 7);
+    assert.ok(briefing.week.totals.studieEvents > 0);
+    assert.ok(briefing.week.totals.privatEvents > 0);
     assert.ok(briefing.summary.text.length > 20);
     assert.equal(briefing.weather.sunset, '2026-11-23T16:54');
   });
