@@ -434,7 +434,7 @@ function renderDayRhythm(rhythm) {
 
   for (const block of rhythm.blocks || []) {
     const bar = document.createElement('div');
-    bar.className = 'rhythm-event';
+    bar.className = `rhythm-event ${block.colorTone || 'tone-privat'}`;
     bar.style.left = `${block.startPct}%`;
     bar.style.width = `${Math.max(0.8, block.widthPct)}%`;
     bar.title = block.title;
@@ -467,7 +467,7 @@ function renderTodaySchedule(events, tz) {
     el.alldayStrip.classList.remove('hidden');
     for (const evt of allDay) {
       const chip = document.createElement('span');
-      chip.className = 'allday-chip';
+      chip.className = `allday-chip ${evt.colorTone || 'tone-privat'}`;
       chip.textContent = `HELE DAGEN · ${evt.title}`;
       el.alldayStrip.appendChild(chip);
     }
@@ -495,7 +495,7 @@ function renderTodaySchedule(events, tz) {
     const isActive = startMs <= nowMs && endMs > nowMs;
 
     const li = document.createElement('li');
-    li.className = 'event-item';
+    li.className = `event-item ${evt.colorTone || 'tone-privat'}`;
     if (isPast) li.classList.add('is-past');
     if (isActive) li.classList.add('is-active');
 
@@ -557,7 +557,7 @@ function renderTomorrowPreview(events, weather, tz) {
 
   for (const evt of events.slice(0, 4)) {
     const li = document.createElement('li');
-    li.className = 'tomorrow-item';
+    li.className = `tomorrow-item ${evt.colorTone || 'tone-privat'}`;
 
     const timeEl = document.createElement('span');
     timeEl.className = 'tomorrow-time';
@@ -671,7 +671,7 @@ function renderWeekOverview(week, tz) {
       for (const evt of filteredEvents) {
         const isStudie = (evt.category || 'privat') === 'studie';
         const li = document.createElement('li');
-        li.className = `week-event ${isStudie ? 'is-studie' : 'is-privat'}`;
+        li.className = `week-event ${isStudie ? 'is-studie' : 'is-privat'} ${evt.colorTone || 'tone-privat'}`;
 
         const top = document.createElement('div');
         top.className = 'week-event-top';

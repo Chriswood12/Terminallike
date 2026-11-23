@@ -37,6 +37,25 @@
   --dot-pattern: rgba(20, 20, 19, 0.045);
   --past-opacity: 0.44;
   --focus-ring: #141413;
+
+  /* Very muted Nordic subject & entry tones (Paper light) */
+  --tone-0: #6d7f71;
+  --tone-0-tint: rgba(109, 127, 113, 0.08);
+  --tone-1: #65788a;
+  --tone-1-tint: rgba(101, 120, 138, 0.08);
+  --tone-2: #9c7361;
+  --tone-2-tint: rgba(156, 115, 97, 0.08);
+  --tone-3: #948158;
+  --tone-3-tint: rgba(148, 129, 88, 0.08);
+  --tone-4: #8e6f74;
+  --tone-4-tint: rgba(142, 111, 116, 0.08);
+  --tone-5: #5f7c7c;
+  --tone-5-tint: rgba(95, 124, 124, 0.08);
+  --tone-privat: #8a8173;
+  --tone-privat-tint: rgba(138, 129, 115, 0.06);
+
+  --evt-accent: var(--tone-privat);
+  --evt-tint: var(--tone-privat-tint);
 }
 
 html[data-theme='oled'] {
@@ -59,7 +78,31 @@ html[data-theme='oled'] {
   --dot-pattern: rgba(223, 220, 212, 0.025);
   --past-opacity: 0.36;
   --focus-ring: #dfdcd4;
+
+  /* Very muted low-glare Nordic tones (OLED dark — zero neon) */
+  --tone-0: #768b7a;
+  --tone-0-tint: rgba(118, 139, 122, 0.11);
+  --tone-1: #728799;
+  --tone-1-tint: rgba(114, 135, 153, 0.11);
+  --tone-2: #a47e6c;
+  --tone-2-tint: rgba(164, 126, 108, 0.11);
+  --tone-3: #9e8c64;
+  --tone-3-tint: rgba(158, 140, 100, 0.11);
+  --tone-4: #997b80;
+  --tone-4-tint: rgba(153, 123, 128, 0.11);
+  --tone-5: #6d8c8c;
+  --tone-5-tint: rgba(109, 140, 140, 0.11);
+  --tone-privat: #8e8679;
+  --tone-privat-tint: rgba(142, 134, 121, 0.08);
 }
+
+.tone-0 { --evt-accent: var(--tone-0); --evt-tint: var(--tone-0-tint); }
+.tone-1 { --evt-accent: var(--tone-1); --evt-tint: var(--tone-1-tint); }
+.tone-2 { --evt-accent: var(--tone-2); --evt-tint: var(--tone-2-tint); }
+.tone-3 { --evt-accent: var(--tone-3); --evt-tint: var(--tone-3-tint); }
+.tone-4 { --evt-accent: var(--tone-4); --evt-tint: var(--tone-4-tint); }
+.tone-5 { --evt-accent: var(--tone-5); --evt-tint: var(--tone-5-tint); }
+.tone-privat { --evt-accent: var(--tone-privat); --evt-tint: var(--tone-privat-tint); }
 
 html[data-font='lexend'] {
   --font-serif: 'Lexend', 'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -435,9 +478,10 @@ html[data-theme='oled'] body.is-screensaver .canvas {
   position: absolute;
   top: 4px;
   bottom: 4px;
-  background: var(--rhythm-block);
+  background: var(--evt-accent, var(--rhythm-block));
   border-radius: 2px;
   min-width: 4px;
+  opacity: 0.88;
 }
 
 .rhythm-now {
@@ -513,9 +557,10 @@ html[data-theme='oled'] body.is-screensaver .canvas {
   font-family: var(--font-mono);
   font-size: clamp(11px, 0.85vw, 15px);
   padding: 4px 10px;
-  border: 1px solid var(--rule-strong);
+  border: 1px solid var(--rule-subtle);
+  border-left: 3px solid var(--evt-accent);
   border-radius: 3px;
-  background: var(--surface);
+  background: var(--evt-tint);
   color: var(--ink);
 }
 
@@ -542,8 +587,9 @@ html[data-theme='oled'] body.is-screensaver .canvas {
   grid-template-columns: clamp(92px, 7.6vw, 148px) 1fr;
   gap: 14px;
   align-items: baseline;
-  padding: clamp(9px, 1.15vh, 16px) 0;
+  padding: clamp(9px, 1.15vh, 16px) 8px clamp(9px, 1.15vh, 16px) 12px;
   border-bottom: 1px solid var(--rule-subtle);
+  border-left: 3px solid var(--evt-accent);
 }
 
 .event-item:last-child {
@@ -555,8 +601,8 @@ html[data-theme='oled'] body.is-screensaver .canvas {
 }
 
 .event-item.is-active {
-  padding-left: 12px;
-  border-left: 3px solid var(--ink);
+  background: var(--evt-tint);
+  border-radius: 0 4px 4px 0;
 }
 
 .event-time {
@@ -600,8 +646,10 @@ html[data-theme='oled'] body.is-screensaver .canvas {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 1px 6px;
-  border: 1px solid var(--rule-subtle);
+  border: 1px solid var(--evt-accent);
+  background: var(--evt-tint);
   border-radius: 3px;
+  color: var(--ink-soft);
 }
 
 /* Tomorrow Preview */
@@ -616,7 +664,9 @@ html[data-theme='oled'] body.is-screensaver .canvas {
   grid-template-columns: clamp(82px, 6.8vw, 132px) 1fr;
   gap: 12px;
   align-items: baseline;
-  padding: clamp(5px, 0.65vh, 10px) 0;
+  padding: clamp(5px, 0.65vh, 10px) 0 clamp(5px, 0.65vh, 10px) 10px;
+  border-left: 2.5px solid var(--evt-accent);
+  margin-bottom: 2px;
 }
 
 .tomorrow-time {
@@ -846,16 +896,16 @@ html[data-theme='oled'] body.is-screensaver .canvas {
   flex: 0 0 auto;
   padding: clamp(5px, 0.65vh, 9px) clamp(7px, 0.7vw, 11px);
   border: 1px solid var(--rule-subtle);
-  border-left: 3px solid var(--rule-subtle);
+  border-left: 3px solid var(--evt-accent);
   border-radius: 4px;
-  background: var(--bg);
+  background: var(--evt-tint);
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .week-event.is-studie {
-  border-left: 3px solid var(--ink);
+  border-left: 3.5px solid var(--evt-accent);
 }
 
 .week-event-top {
@@ -881,11 +931,11 @@ html[data-theme='oled'] body.is-screensaver .canvas {
 }
 
 .week-cat-dot.is-studie {
-  background: var(--ink);
+  background: var(--evt-accent);
 }
 
 .week-cat-dot.is-privat {
-  border: 1.5px solid var(--muted);
+  border: 1.5px solid var(--evt-accent);
   background: transparent;
 }
 
