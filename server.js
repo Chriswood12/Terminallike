@@ -9,6 +9,7 @@ import geocodeHandler from './api/geocode.js';
 import healthHandler from './api/health.js';
 import wallpaperHandler from './api/wallpaper.js';
 import projectivyHandler from './api/projectivy.js';
+import scriptableHandler from './api/scriptable.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -88,6 +89,10 @@ export function createAppServer() {
     }
     if (url.pathname === '/api/projectivy') {
       projectivyHandler(req, res);
+      return;
+    }
+    if (url.pathname === '/api/scriptable') {
+      scriptableHandler(req, res);
       return;
     }
 

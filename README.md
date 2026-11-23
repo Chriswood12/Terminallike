@@ -155,6 +155,16 @@ Make sure Projectivy does not block the Android TV system screensaver:
 
 ---
 
+## iPhone Widget (Home Screen & Lock Screen via Scriptable)
+
+1. Install the free **Scriptable** app from the iOS App Store.
+2. On your iPhone, open `https://<your-app>.vercel.app/api/scriptable` in Safari — your live Vercel URL is already pre-filled at the top of the script.
+3. Tap **Select All → Copy**, open **Scriptable → `+`**, paste the script, and name it **Terminallike**.
+4. Long-press your iPhone Home Screen (or Lock Screen) → **`+` → Scriptable** → pick **Small**, **Medium**, **Large**, or **Lock Screen** → tap the widget and choose **Terminallike**.
+   - *(Optional)* Set the Scriptable **Parameter** to `oled` (always black), `paper` (always warm paper), or leave blank for `auto` (auto-at-sunset).
+
+---
+
 ## Keyboard & Remote Shortcuts
 
 | Key | Action |
